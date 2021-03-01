@@ -11,11 +11,11 @@ router.post('/create', authorize(), createListingSchema, createListing);
 router.post('/register/:id', authorize(), register);
 router.post('/cancel/:id', authorize(), cancel);
 router.get('/', authorize(Role.Admin), getAll);
-router.get('/listings', authorize(Role.Admin, Role.Tutor), getAllListings);
-router.get('/mylistings', authorize(Role.Admin, Role.Student), getMyListings);
-router.get('/listing/:id', authorize(Role.Admin, Role.Student), getListingById);
-router.get('/mypositions', authorize(Role.Admin, Role.Tutor), getMyPositions);
-router.get('/position/:id', authorize(Role.Admin, Role.Tutor), getPositionById);
+router.get('/listings', authorize(Role.Admin, Role.Student), getAllListings);
+router.get('/mylistings', authorize(Role.Admin, Role.Tutor), getMyListings);
+router.get('/listing/:id', authorize(Role.Admin, Role.Tutor), getListingById);
+router.get('/mypositions', authorize(Role.Admin, Role.Student), getMyPositions);
+router.get('/position/:id', authorize(Role.Admin, Role.Student), getPositionById);
 router.put('/update/:id', authorize(), updateSchema, update);
 router.delete('/delete/:id', authorize(), _delete);
 
