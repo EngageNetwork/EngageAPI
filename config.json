@@ -1,0 +1,13 @@
+﻿{
+    "connectionString": "mongodb://localhost:27017/EngageWebAppDB",
+    "secret": "incredibly-secret-secret-for-signing",
+    "emailFrom": "auth@mwang.tk",
+    "smtpOptions": {
+        "host": "smtp.ethereal.email",
+        "port": 587,
+        "auth": {
+            "user": "elwyn.miller@ethereal.email",
+            "pass": "Z8qNvH4PaJWejJXzx1"
+        }
+    }
+}
