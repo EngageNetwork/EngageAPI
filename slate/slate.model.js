@@ -8,6 +8,7 @@ const schema = new Schema({
     date: Date,
     registered: { type: Schema.Types.ObjectId, ref: 'Registered' },
     registerDate: Date,
+    subjects: String,
     markedCompletedStudent: Boolean,
     markedCompletedTutor: Boolean,
     deleted: Boolean,

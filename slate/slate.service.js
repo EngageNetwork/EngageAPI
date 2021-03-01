@@ -11,8 +11,8 @@ module.exports = {
     getAllListings,
     getMyListings,
     getListingById,
-    getMyPositions,
-    getPositionById,
+    getMySessions,
+    getSessionById,
     update,
     delete: _delete
 }
@@ -78,19 +78,19 @@ async function getListingById(id) {
     return basicListingDetails(listing);
 }
 
-async function getMyPositions(account) {
-    const positions = await db.Slate.find({
+async function getMySessions(account) {
+    const sessions = await db.Slate.find({
         registered: account,
         deleted: { $ne: true }
     });
-    return positions.map(x => basicListingDetails(x));
+    return sessions.map(x => basicListingDetails(x));
 }
 
-async function getPositionById(id) {
-    if (!db.isValidId(id)) throw 'Position not found';
-    const position = await db.Slate.findById(id);
-    if (!position) throw 'Position not found';
-    return basicListingDetails(position);
+async function getSessionById(id) {
+    if (!db.isValidId(id)) throw 'Session not found';
+    const session = await db.Slate.findById(id);
+    if (!session) throw 'Session not found';
+    return basicListingDetails(session);
 }
 
 async function update(account, id, params) {
@@ -132,13 +132,13 @@ async function getListing(id) {
 }
 
 function basicListingDetails(listing) {
-    const { id, account, created, task, registered, details, completed } = listing;
-    return { id, account, created, task, registered, details, completed };
+    const { id, account, created, date, registered, subjects, markedCompletedStudent, markedCompletedTutor } = listing;
+    return { id, account, created, date, registered, subjects, markedCompletedStudent, markedCompletedTutor };
 }
 
 function allListingDetails(listing) {
-    const { id, account, created, updated, registered, registerDate, task, details, completed, deleted, deleteDate } = listing;
-    return { id, account, created, updated, registered, registerDate, task, details, completed, deleted, deleteDate };
+    const { id, account, created, updated, date, registered, registerDate, subjects, markedCompletedStudent, markedCompletedTutor, deleted, deleteDate } = listing;
+    return { id, account, created, updated, date, registered, registerDate, subjects, markedCompletedStudent, markedCompletedTutor, deleted, deleteDate };
 }
 
 async function sendListingConfirmationEmail(email, origin, id) {
@@ -155,16 +155,16 @@ async function sendListingConfirmationEmail(email, origin, id) {
     })
 }
 
-async function sendPositionConfirmationEmail(email, origin, id) {
+async function sendSessionConfirmationEmail(email, origin, id) {
     let message;
     if (origin) {
-        message = `<p>View the position page <a href="${origin}/volunteer/positions/${id}">here</a>.</p>`
+        message = `<p>View the session details <a href="${origin}/volunteer/positions/${id}">here</a>.</p>`
     }
 
     await sendEmail({
         to: email,
-        subject: 'Engage Network - Registered for Position',
-        html: `<h4>Registered for Position</h4>
+        subject: 'Engage Network - Registered for Session',
+        html: `<h4>Registered for Session</h4>
                ${message}`
     })
 }

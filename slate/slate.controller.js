@@ -14,8 +14,8 @@ router.get('/', authorize(Role.Admin), getAll);
 router.get('/listings', authorize(Role.Admin, Role.Student), getAllListings);
 router.get('/mylistings', authorize(Role.Admin, Role.Tutor), getMyListings);
 router.get('/listing/:id', authorize(Role.Admin, Role.Tutor), getListingById);
-router.get('/mypositions', authorize(Role.Admin, Role.Student), getMyPositions);
-router.get('/position/:id', authorize(Role.Admin, Role.Student), getPositionById);
+router.get('/mysessions', authorize(Role.Admin, Role.Student), getMySessions);
+router.get('/session/:id', authorize(Role.Admin, Role.Student), getSessionById);
 router.put('/update/:id', authorize(), updateSchema, update);
 router.delete('/delete/:id', authorize(), _delete);
 
@@ -82,15 +82,15 @@ function getListings(req, res, next) {
         .catch(next);
 }
 
-function getMyPositions(req, res, next) {
+function getMySessions(req, res, next) {
     const account = req.user.id;
-    slateService.getMyPositions(account)
+    slateService.getMySessions(account)
         .then(positions => res.json(positions))
         .catch(next);
 }
 
-function getPositionById(req, res, next) {
-    slateService.getPositionById(req.params.id)
+function getSessionById(req, res, next) {
+    slateService.getSessionById(req.params.id)
         .then(position => position ? res.json(position) : res.sendStatus(404))
         .catch(next)
 }
