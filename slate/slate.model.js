@@ -5,7 +5,7 @@ const schema = new Schema({
     account: { type: Schema.Types.ObjectId, ref: 'Account' },
     created: { type: Date, default: Date.now },
     updated: { type: Date, default: Date.now },
-    // availableDates: Date,
+    date: Date,
     registered: { type: Schema.Types.ObjectId, ref: 'Registered' },
     registerDate: Date,
     markedCompletedStudent: Boolean,

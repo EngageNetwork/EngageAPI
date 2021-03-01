@@ -7,7 +7,7 @@ const Role = require('_helpers/role');
 const slateService = require('./slate.service');
 
 // Routes
-router.post('/create', authorize(), createListing);
+router.post('/create', authorize(), createListingSchema, createListing);
 router.post('/register/:id', authorize(), register);
 router.post('/cancel/:id', authorize(), cancel);
 router.get('/', authorize(Role.Admin), getAll);
@@ -16,16 +16,23 @@ router.get('/mylistings', authorize(Role.Admin, Role.Tutor), getMyListings);
 router.get('/listing/:id', authorize(Role.Admin, Role.Tutor), getListingById);
 router.get('/mypositions', authorize(Role.Admin, Role.Student), getMyPositions);
 router.get('/position/:id', authorize(Role.Admin, Role.Student), getPositionById);
-router.put('/update/:id', authorize(), update);
+router.put('/update/:id', authorize(), updateSchema, update);
 router.delete('/delete/:id', authorize(), _delete);
 
 module.exports = router;
 
 // API Functions
+function createListingSchema(req, res, next) {
+    const schema = Joi.object({
+        date: Joi.string().required()
+    });
+    validateRequest(req, next, schema);
+}
+
 function createListing(req, res, next) {
     const account = req.user.id;
-    const { task, details } = req.body;
-    slateService.createListing({ account, task, details })
+    const date = req.body;
+    slateService.createListing({ account, date })
         .then(() => res.json({ message: 'Listing created successfully' }))
         .catch(next);
 }
@@ -86,6 +93,14 @@ function getPositionById(req, res, next) {
     slateService.getPositionById(req.params.id)
         .then(position => position ? res.json(position) : res.sendStatus(404))
         .catch(next)
+}
+
+function updateSchema(req, res, next) {
+    const schema = Joi.object({
+        date: Joi.string().required()
+    });
+    validateRequest(req, next, schema);
+
 }
 
 function update(req, res, next) {
