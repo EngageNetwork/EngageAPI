@@ -1,5 +1,5 @@
 {
-    "name": "engage-api",
+    "name": "engage-app-api",
     "version": "1.0.0",
     "description": "NodeJS + MongoDB API for Engage Web Application functions",
     "scripts": {

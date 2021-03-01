@@ -7,7 +7,7 @@ const Role = require('_helpers/role');
 const slateService = require('./slate.service');
 
 // Routes
-router.post('/create', authorize(), createListingSchema, createListing);
+router.post('/create', authorize(), createListing);
 router.post('/register/:id', authorize(), register);
 router.post('/cancel/:id', authorize(), cancel);
 router.get('/', authorize(Role.Admin), getAll);
@@ -16,20 +16,12 @@ router.get('/mylistings', authorize(Role.Admin, Role.Tutor), getMyListings);
 router.get('/listing/:id', authorize(Role.Admin, Role.Tutor), getListingById);
 router.get('/mypositions', authorize(Role.Admin, Role.Student), getMyPositions);
 router.get('/position/:id', authorize(Role.Admin, Role.Student), getPositionById);
-router.put('/update/:id', authorize(), updateSchema, update);
+router.put('/update/:id', authorize(), update);
 router.delete('/delete/:id', authorize(), _delete);
 
 module.exports = router;
 
 // API Functions
-function createListingSchema(req, res, next) {
-    const schema = Joi.object({
-        task: Joi.string().required(),
-        details: Joi.string().required()
-    });
-    validateRequest(req, next, schema);
-}
-
 function createListing(req, res, next) {
     const account = req.user.id;
     const { task, details } = req.body;
@@ -41,14 +33,14 @@ function createListing(req, res, next) {
 function register(req, res, next) {
     const account = req.user.id;
     slateService.register(account, req.params.id)
-        .then(() => res.json({ message: 'Successfully registered for position' }))
+        .then(() => res.json({ message: 'Successfully registered for tutor' }))
         .catch(next);
 }
 
 function cancel(req, res, next) {
     const account = req.user.id;
     slateService.cancel(account, req.params.id)
-        .then(() => res.json({ message: 'Successfully cancelled position' }))
+        .then(() => res.json({ message: 'Successfully cancelled tutor registration' }))
         .catch(next);
 }
 
@@ -96,15 +88,6 @@ function getPositionById(req, res, next) {
         .catch(next)
 }
 
-function updateSchema(req, res, next) {
-    const schema = Joi.object({
-        task: Joi.string().empty(''),
-        details: Joi.string().empty('')
-    });
-    validateRequest(req, next, schema);
-
-}
-
 function update(req, res, next) {
     const account = req.user;
     const id = req.params.id;
@@ -116,6 +99,6 @@ function update(req, res, next) {
 function _delete(req, res, next) {
     const account = req.user;
     slateService.delete(account, req.params.id)
-        .then(() => res.json({ message: 'Listing deleted successfully' }))
+        .then(() => res.json({ message: 'Listing removed successfully' }))
         .catch(next);
 }

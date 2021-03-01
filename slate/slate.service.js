@@ -149,7 +149,7 @@ async function sendListingConfirmationEmail(email, origin, id) {
 
     await sendEmail({
         to: email,
-        subject: 'Connection - Listing Created',
+        subject: 'Engage Network - Listing Created',
         html: `<h4>Listing Created</h4>
                ${message}`
     })
@@ -163,7 +163,7 @@ async function sendPositionConfirmationEmail(email, origin, id) {
 
     await sendEmail({
         to: email,
-        subject: 'Connection - Registered for Position',
+        subject: 'Engage Network - Registered for Position',
         html: `<h4>Registered for Position</h4>
                ${message}`
     })

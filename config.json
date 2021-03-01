@@ -1,5 +1,5 @@
 ﻿{
-    "connectionString": "mongodb://localhost:27017/EngageWebAppDB",
+    "connectionString": "mongodb://localhost:27017/EngageAppDB",
     "secret": "incredibly-secret-secret-for-signing",
     "emailFrom": "auth@mwang.tk",
     "smtpOptions": {
