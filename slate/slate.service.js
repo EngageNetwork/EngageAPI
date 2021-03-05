@@ -21,6 +21,10 @@ async function createListing(params) {
     // Create listing object
     const listing = new db.Slate(params);
 
+    // Set Time for Creation and Update to Now
+    listing.created = Date().toISOString();
+    listing.updated = Date().toISOString();
+
     // Save listing to database
     await listing.save();
 }
@@ -103,7 +107,7 @@ async function update(account, id, params) {
 
     // Copy details to listing and save
     Object.assign(listing, params);
-    listing.updated = Date.now();
+    listing.updated = Date().toISOString();
     await listing.save();
 
     return basicListingDetails(listing);

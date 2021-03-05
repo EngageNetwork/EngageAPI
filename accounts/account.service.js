@@ -89,6 +89,9 @@ async function register(params, origin) {
     // Create account object
     const account = new db.Account(params);
 
+    // Set Account Creation Date
+    account.created = Date().toISOString();
+
     // Generate random token for verification token
     account.verificationToken = randomTokenString();
 

@@ -14,7 +14,7 @@ const schema = new Schema({
         expires: Date
     },
     passwordReset: Date,
-    created: { type: Date, default: Date.now },
+    created: Date,
     updated: Date
 });
 

@@ -3,8 +3,8 @@ const Schema = mongoose.Schema;
 
 const schema = new Schema({
     account: { type: Schema.Types.ObjectId, ref: 'Account' },
-    created: { type: Date, default: Date.now },
-    updated: { type: Date, default: Date.now },
+    created: Date,
+    updated: Date,
     date: Date,
     registered: { type: Schema.Types.ObjectId, ref: 'Registered' },
     registerDate: Date,
@@ -14,6 +14,5 @@ const schema = new Schema({
     deleted: Boolean,
     deleteDate: Date
 });
-
 
 module.exports = mongoose.model('Slate', schema)
