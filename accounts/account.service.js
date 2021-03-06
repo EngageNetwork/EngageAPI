@@ -29,7 +29,7 @@ async function authenticate({ email, password, ipAddress }) {
     }
 
     if (!account.isVerified) {
-        throw 'Not verified - Please verify your email, then try again'
+        throw 'Account unverified - Please verify your email, then try again'
     }
 
     // authentication successful so generate jwt and refresh tokens
