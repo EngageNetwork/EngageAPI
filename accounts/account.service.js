@@ -90,7 +90,7 @@ async function register(params, origin) {
     const account = new db.Account(params);
 
     // Set Account Creation Date
-    account.created = Date().toISOString();
+    account.created = Date.now();
 
     // Generate random token for verification token
     account.verificationToken = randomTokenString();
@@ -173,6 +173,9 @@ async function create(params) {
     }
 
     const account = new db.Account(params);
+    
+    // Set Account Creation Date
+    account.created = Date.now();
     account.verified = Date.now();
 
     // hash password

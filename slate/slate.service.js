@@ -22,8 +22,8 @@ async function createListing(params) {
     const listing = new db.Slate(params);
 
     // Set Time for Creation and Update to Now
-    listing.created = Date().toISOString();
-    listing.updated = Date().toISOString();
+    listing.created = Date.now();
+    listing.updated = Date.now();
 
     // Save listing to database
     await listing.save();
@@ -107,7 +107,7 @@ async function update(account, id, params) {
 
     // Copy details to listing and save
     Object.assign(listing, params);
-    listing.updated = Date().toISOString();
+    listing.updated = Date.now();
     await listing.save();
 
     return basicListingDetails(listing);
@@ -136,19 +136,19 @@ async function getListing(id) {
 }
 
 function basicListingDetails(listing) {
-    const { id, account, created, date, registered, subjects, markedCompletedStudent, markedCompletedTutor } = listing;
-    return { id, account, created, date, registered, subjects, markedCompletedStudent, markedCompletedTutor };
+    const { id, account, created, date, subject, startTime, endTime, registered, markedCompletedStudent, markedCompletedTutor } = listing;
+    return { id, account, created, date, subject, startTime, endTime, registered, markedCompletedStudent, markedCompletedTutor };
 }
 
 function allListingDetails(listing) {
-    const { id, account, created, updated, date, registered, registerDate, subjects, markedCompletedStudent, markedCompletedTutor, deleted, deleteDate } = listing;
-    return { id, account, created, updated, date, registered, registerDate, subjects, markedCompletedStudent, markedCompletedTutor, deleted, deleteDate };
+    const { id, account, created, updated, date, subject, startTime, endTime, registered, registerDate, markedCompletedStudent, markedCompletedTutor, deleted, deleteDate } = listing;
+    return { id, account, created, updated, date, subject, startTime, endTime, registered, registerDate, markedCompletedStudent, markedCompletedTutor, deleted, deleteDate };
 }
 
 async function sendListingConfirmationEmail(email, origin, id) {
     let message;
     if (origin) {
-        message = `<p>View the listing page <a href="${origin}/user/listings/${id}">here</a>.</p>`
+        message = `<p>View the listing page <a href="${origin}/tutor/listings/${id}">here</a>.</p>`
     }
 
     await sendEmail({
@@ -162,7 +162,7 @@ async function sendListingConfirmationEmail(email, origin, id) {
 async function sendSessionConfirmationEmail(email, origin, id) {
     let message;
     if (origin) {
-        message = `<p>View the session details <a href="${origin}/volunteer/positions/${id}">here</a>.</p>`
+        message = `<p>View the session details <a href="${origin}/student/sessions/${id}">here</a>.</p>`
     }
 
     await sendEmail({

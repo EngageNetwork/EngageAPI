@@ -24,15 +24,22 @@ module.exports = router;
 // API Functions
 function createListingSchema(req, res, next) {
     const schema = Joi.object({
-        date: Joi.string().required()
+        date: Joi.string().required(),
+        subject: Joi.string().required(),
+        startTime: Joi.string().required(),
+        endTime: Joi.string().required()
     });
     validateRequest(req, next, schema);
 }
 
 function createListing(req, res, next) {
+    console.log(req.body);
     const account = req.user.id;
-    const date = req.body;
-    slateService.createListing({ account, date })
+    const date = req.body.date;
+    const subject = req.body.subject;
+    const startTime = req.body.startTime;
+    const endTime = req.body.endTime;
+    slateService.createListing({ account, date, subject, startTime, endTime })
         .then(() => res.json({ message: 'Listing created successfully' }))
         .catch(next);
 }
@@ -97,7 +104,10 @@ function getSessionById(req, res, next) {
 
 function updateSchema(req, res, next) {
     const schema = Joi.object({
-        date: Joi.string().required()
+        date: Joi.string().required(),
+        subject: Joi.string().required(),
+        startTime: Joi.string().required(),
+        endTime: Joi.string().required()
     });
     validateRequest(req, next, schema);
 
