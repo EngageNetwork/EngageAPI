@@ -33,7 +33,6 @@ function createListingSchema(req, res, next) {
 }
 
 function createListing(req, res, next) {
-    console.log(req.body);
     const account = req.user.id;
     const date = req.body.date;
     const subject = req.body.subject;
