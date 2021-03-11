@@ -24,21 +24,19 @@ module.exports = router;
 // API Functions
 function createListingSchema(req, res, next) {
     const schema = Joi.object({
-        date: Joi.string().required(),
         subject: Joi.string().required(),
-        startTime: Joi.string().required(),
-        endTime: Joi.string().required()
+        startDateTime: Joi.string().required(),
+        endDateTime: Joi.string().required()
     });
     validateRequest(req, next, schema);
 }
 
 function createListing(req, res, next) {
     const account = req.user.id;
-    const date = req.body.date;
     const subject = req.body.subject;
-    const startTime = req.body.startTime;
-    const endTime = req.body.endTime;
-    slateService.createListing({ account, date, subject, startTime, endTime })
+    const startDateTime = new Date(req.body.startDateTime).toISOString();
+    const endDateTime = new Date(req.body.endDateTime).toISOString();
+    slateService.createListing({ account, subject, startDateTime, endDateTime })
         .then(() => res.json({ message: 'Listing created successfully' }))
         .catch(next);
 }
@@ -103,10 +101,9 @@ function getSessionById(req, res, next) {
 
 function updateSchema(req, res, next) {
     const schema = Joi.object({
-        date: Joi.string().required(),
         subject: Joi.string().required(),
-        startTime: Joi.string().required(),
-        endTime: Joi.string().required()
+        startDateTime: Joi.string().required(),
+        endDateTime: Joi.string().required()
     });
     validateRequest(req, next, schema);
 
@@ -115,7 +112,10 @@ function updateSchema(req, res, next) {
 function update(req, res, next) {
     const account = req.user;
     const id = req.params.id;
-    slateService.update(account, id, req.body)
+    const subject = req.body.subject;
+    const startDateTime = new Date(req.body.startDateTime).toISOString();
+    const endDateTime = new Date(req.body.endDateTime).toISOString();
+    slateService.update(account, id, { subject, startDateTime, endDateTime })
         .then(listing => res.json(listing))
         .catch(next);
 }
