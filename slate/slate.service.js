@@ -136,13 +136,13 @@ async function getListing(id) {
 }
 
 function basicListingDetails(listing) {
-    const { id, account, created, date, subject, startTime, endTime, registered, markedCompletedStudent, markedCompletedTutor } = listing;
-    return { id, account, created, date, subject, startTime, endTime, registered, markedCompletedStudent, markedCompletedTutor };
+    const { id, account, created, subject, startDateTime, endDateTime, registered, markedCompletedStudent, markedCompletedTutor } = listing;
+    return { id, account, created, subject, startDateTime, endDateTime, registered, markedCompletedStudent, markedCompletedTutor };
 }
 
 function allListingDetails(listing) {
-    const { id, account, created, updated, date, subject, startTime, endTime, registered, registerDate, markedCompletedStudent, markedCompletedTutor, deleted, deleteDate } = listing;
-    return { id, account, created, updated, date, subject, startTime, endTime, registered, registerDate, markedCompletedStudent, markedCompletedTutor, deleted, deleteDate };
+    const { id, account, created, updated, subject, startDateTime, endDateTime, registered, registerDate, markedCompletedStudent, markedCompletedTutor, deleted, deleteDate } = listing;
+    return { id, account, created, updated, subject, startDateTime, endDateTime, registered, registerDate, markedCompletedStudent, markedCompletedTutor, deleted, deleteDate };
 }
 
 async function sendListingConfirmationEmail(email, origin, id) {
