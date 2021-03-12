@@ -16,6 +16,7 @@ module.exports = {
     resetPassword,
     getAll,
     getById,
+    getByIdPublic,
     create,
     update,
     delete: _delete
@@ -166,6 +167,11 @@ async function getById(id) {
     return basicDetails(account);
 }
 
+async function getByIdPublic(id) {
+    const account = await getAccount(id);
+    return publicDetails(account);
+}
+
 async function create(params) {
     // validate
     if (await db.Account.findOne({ email: params.email })) {
@@ -254,6 +260,11 @@ function randomTokenString() {
 function basicDetails(account) {
     const { id, firstName, lastName, email, role, created, updated, isVerified } = account;
     return { id, firstName, lastName, email, role, created, updated, isVerified };
+}
+
+function publicDetails(account) {
+    const { id, firstName, lastName, role } = account;
+    return { id, firstName, lastName, role };
 }
 
 async function sendVerificationEmail(account, origin) {
