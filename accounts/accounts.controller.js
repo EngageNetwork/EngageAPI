@@ -172,7 +172,6 @@ function getById(req, res, next) {
 }
 
 function getByIdPublic(req, res, next) {
-    console.log('received');
     // Accessible to all logged-in users
     if (!req.user.id) {
         return res.status(401).json({ message: 'Unauthorized' });
