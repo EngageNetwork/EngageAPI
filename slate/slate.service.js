@@ -7,7 +7,8 @@ module.exports = {
 	createListing,
 	register,
 	cancel,
-	getAll,
+	getAllAdmin,
+	getSlateByIdAdmin,
 	getAllListings,
 	getMyListings,
 	getListingById,
@@ -54,9 +55,16 @@ async function cancel(account, id) {
 	await position.save();
 }
 
-async function getAll() {
+async function getAllAdmin() {
 	const listings = await db.Slate.find();
 	return listings.map(x => allListingDetails(x));
+}
+
+async function getSlateByIdAdmin(id) {
+	if (!db.isValidId(id)) throw 'Listing not found';
+	const listing = await db.Slate.findById(id);
+	if (!listing) throw 'Listing not found';
+	return allListingDetails(listing);
 }
 
 async function getAllListings() {

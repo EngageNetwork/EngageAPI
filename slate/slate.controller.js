@@ -10,7 +10,8 @@ const slateService = require('./slate.service');
 router.post('/create', authorize(), createListingSchema, createListing);
 router.post('/register/:id', authorize(), register);
 router.post('/cancel/:id', authorize(), cancel);
-router.get('/', authorize(Role.Admin), getAll);
+router.get('/', authorize(Role.Admin), getAllAdmin);
+router.get('/slate/:id', authorize(Role.Admin), getSlateByIdAdmin);
 router.get('/listings', authorize(Role.Admin, Role.Student), getAllListings);
 router.get('/mylistings', authorize(Role.Admin, Role.Tutor), getMyListings);
 router.get('/listing/:id', authorize(Role.Admin, Role.Tutor), getListingById);
@@ -55,9 +56,15 @@ function cancel(req, res, next) {
 	.catch(next);
 }
 
-function getAll(req, res, next) {
-	slateService.getAll()
+function getAllAdmin(req, res, next) {
+	slateService.getAllAdmin()
 	.then(listings => res.json(listings))
+	.catch(next);
+}
+
+function getSlateByIdAdmin(req, res, next) {
+	slateService.getSlateByIdAdmin(req.params.id)
+	.then(listing => listing ? res.json(listing) : res.sendStatus(404))
 	.catch(next);
 }
 
@@ -77,12 +84,6 @@ function getMyListings(req, res, next) {
 function getListingById(req, res, next) {
 	slateService.getListingById(req.params.id)
 	.then(listing => listing ? res.json(listing) : res.sendStatus(404))
-	.catch(next);
-}
-
-function getListings(req, res, next) {
-	slateService.getListings()
-	.then(listings => res.json(listings))
 	.catch(next);
 }
 
