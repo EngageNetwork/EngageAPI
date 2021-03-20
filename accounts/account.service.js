@@ -258,13 +258,13 @@ function randomTokenString() {
 }
 
 function basicDetails(account) {
-	const { id, firstName, lastName, email, role, created, updated, isVerified } = account;
-	return { id, firstName, lastName, email, role, created, updated, isVerified };
+	const { id, firstName, lastName, email, role, behaviourRating, overallContentRating, mathContentRating, scienceContentRating, socialStudiesContentRating, languageArtsContentRating, ForeignLanguageAcquisitionContentRating, created, updated, isVerified } = account;
+	return { id, firstName, lastName, email, role, behaviourRating, overallContentRating, mathContentRating, scienceContentRating, socialStudiesContentRating, languageArtsContentRating, ForeignLanguageAcquisitionContentRating, created, updated, isVerified };
 }
 
 function publicDetails(account) {
-	const { id, firstName, lastName, role } = account;
-	return { id, firstName, lastName, role };
+	const { id, firstName, lastName, role, behaviourRating, overallContentRating, mathContentRating, scienceContentRating, socialStudiesContentRating, languageArtsContentRating, ForeignLanguageAcquisitionContentRating } = account;
+	return { id, firstName, lastName, role, behaviourRating, overallContentRating, mathContentRating, scienceContentRating, socialStudiesContentRating, languageArtsContentRating, ForeignLanguageAcquisitionContentRating };
 }
 
 async function sendVerificationEmail(account, origin) {

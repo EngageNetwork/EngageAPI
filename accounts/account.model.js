@@ -7,6 +7,13 @@ const schema = new Schema({
 	firstName: { type: String, required: true },
 	lastName: { type: String, required: true },
 	role: { type: String, required: true },
+	behaviourRating: Number,
+	overallContentRating: Number,
+	mathContentRating: Number,
+	scienceContentRating: Number,
+	socialStudiesContentRating: Number,
+	languageArtsContentRating: Number,
+	foreignLanguageAcquisitionContentRating: Number,
 	verificationToken: String,
 	verified: Date,
 	resetToken: {
