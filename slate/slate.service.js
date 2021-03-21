@@ -1,6 +1,5 @@
 const sendEmail = require('_helpers/send-email');
 const db = require('_helpers/db');
-const bodyParser = require('body-parser');
 const Role = require('_helpers/role');
 
 module.exports = {
@@ -15,6 +14,8 @@ module.exports = {
 	getMySessions,
 	getSessionById,
 	update,
+	submitContentRating,
+	submitBehaviourRating,
 	delete: _delete
 }
 
@@ -119,6 +120,44 @@ async function update(account, id, params) {
 	await listing.save();
 	
 	return basicListingDetails(listing);
+}
+
+async function submitContentRating(account, id, params) {
+	if (!db.isValidId(id)) throw 'Session not found';
+	const session = await getListing(id);
+	if (!session) throw 'Session not found';
+
+	// Verify submission came from registered student
+	if (session.registered.toString() !== account.id) throw 'Unauthorized';
+
+	// Save content rating to database
+	Object.assign(session, params);
+	await session.save();
+}
+
+async function submitBehaviourRating(account, id, behaviourRating) {
+	if (!db.isValidId(id)) throw 'Session not found';
+	const session = await getListing(id);
+	if (!session) throw 'Session not found';
+
+	// Verify submission came from listing tutor or registered student
+	if (session.account.toString() !== account.id && session.registered.toString() !== account.id) throw 'Unauthorized';
+
+	// Branch based on if submission is from tutor or student
+	// From Tutor
+	if (session.account.toString() === account.id) {
+		studentBehaviourRatingByTutor = behaviourRating;
+		params = { studentBehaviourRatingByTutor };
+		Object.assign(session, params);
+		await session.save();
+	}
+	// From Student
+	if (session.registered.toString() === account.id) {
+		tutorBehaviourRatingByStudent = behaviourRating;
+		params = { tutorBehaviourRatingByStudent };
+		Object.assign(session, params);
+		await session.save();
+	}
 }
 
 async function _delete(account, id) {
