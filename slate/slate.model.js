@@ -12,6 +12,9 @@ const schema = new Schema({
 	registerDate: Date,
 	markedCompletedStudent: Boolean,
 	markedCompletedTutor: Boolean,
+	tutorContentRatingByStudent: Number,
+	tutorBehaviourRatingByStudent: Number,
+	studentBehaviourRatingByTutor: Number,
 	deleted: Boolean,
 	deleteDate: Date
 });
