@@ -87,6 +87,9 @@ async function register(params, origin) {
 		return await sendAlreadyRegisteredEmail(params.email, origin);
 	}
 	
+	// Prevent creation of administrator account
+	if (params.role == 'Admin') throw 'Unauthorized';
+
 	// Create account object
 	const account = new db.Account(params);
 	
