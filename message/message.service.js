@@ -94,7 +94,7 @@ async function createPostInChat (chatId, message, postedByUser) {
 					{ $match: { $expr: { $eq: ['$_id', '$$userIds'] } } },
 					{ $project: { _id: 1, firstName: 1, lastName: 1 } }
 				],
-				as: 'chatInfo.userProfile',
+				as: 'chatInfo.userProfile'
 			}
 		},
 		{ $unwind: '$chatInfo.userProfile' },
@@ -127,9 +127,13 @@ async function getConversationByChatId (chatId, options = {}) {
 		{
 			$lookup: {
 				from: 'accounts',
-				localField: 'postedByUser',
-				foreignField: '_id',
-				as: 'postedByUser',
+				// Filter out unnecessary data fields
+				let: { postedByUser: '$postedByUser' },
+				pipeline: [
+					{ $match: { $expr: { $eq: ['$_id', '$$postedByUser'] } } },
+					{ $project: { _id: 1, firstName: 1, lastName: 1 } }
+				],
+				as: 'postedByUser'
 			}
 		},
 		{ $unwind: "$postedByUser" },
@@ -160,9 +164,13 @@ async function getRecentChat (chatIds, options, currentOnlineUserId) {
 		{
 			$lookup: {
 				from: 'accounts',
-				localField: 'postedByUser',
-				foreignField: '_id',
-				as: 'postedByUser',
+				// Filter out unnecessary data fields
+				let: { postedByUser: '$postedByUser' },
+				pipeline: [
+					{ $match: { $expr: { $eq: ['$_id', '$$postedByUser'] } } },
+					{ $project: { _id: 1, firstName: 1, lastName: 1 } }
+				],
+				as: 'postedByUser'
 			}
 		},
 		{ $unwind: "$postedByUser" },
@@ -181,9 +189,13 @@ async function getRecentChat (chatIds, options, currentOnlineUserId) {
 		{
 			$lookup: {
 				from: 'accounts',
-				localField: 'chatInfo.userIds',
-				foreignField: '_id',
-				as: 'chatInfo.userProfile',
+				// Filter out unnecessary data fields
+				let: { userIds: '$chatInfo.userIds' },
+				pipeline: [
+					{ $match: { $expr: { $eq: ['$_id', '$$userIds'] } } },
+					{ $project: { _id: 1, firstName: 1, lastName: 1 } }
+				],
+				as: 'chatInfo.userProfile'
 			}
 		},
 		{ $unwind: "$readByRecipients" },
@@ -191,8 +203,11 @@ async function getRecentChat (chatIds, options, currentOnlineUserId) {
 		{
 			$lookup: {
 				from: 'accounts',
-				localField: 'readByRecipients.readByUserId',
-				foreignField: '_id',
+				let: { readByUserId: '$readByRecipients.readByUserId' },
+				pipeline: [
+					{ $match: { $expr: { $eq: ['$_id', '$$readByUserId'] } } },
+					{ $project: { _id: 1, firstName: 1, lastName: 1 } }
+				],
 				as: 'readByRecipients.readByUser',
 			}
 		},
