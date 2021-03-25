@@ -15,6 +15,7 @@ module.exports = {
 	validateResetToken,
 	resetPassword,
 	getAll,
+	getUsersByIds,
 	getById,
 	getByIdPublic,
 	create,
@@ -163,6 +164,11 @@ async function resetPassword({ token, password }) {
 async function getAll() {
 	const accounts = await db.Account.find();
 	return accounts.map(x => basicDetails(x));
+}
+
+async function getUsersByIds(ids) {
+	const accounts = await db.Account.find({ _id: { $in: ids } });
+	return accounts;
 }
 
 async function getById(id) {

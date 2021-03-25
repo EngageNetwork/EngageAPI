@@ -14,6 +14,8 @@ module.exports = {
 	Account: require('accounts/account.model'),
 	RefreshToken: require('accounts/refresh-token.model'),
 	Slate: require('slate/slate.model'),
+	Chat: require('message/chat.model'),
+	Message: require('message/message.model'),
 	isValidId
 };
 
