@@ -22,23 +22,15 @@ async function initiateChat(userIds, chatInitiator) {
 	});
 	
 	if (availableChat) {
-		chat = {
-			isNew: false,
-			message: 'Retrieving existing chat',
-			chatId: availableChat._doc._id
-		}
-		return chat;
+		const { id } = availableChat;
+		return { id };
 	}
-	const newChat = new db.Chat({ userIds, chatInitiator });
-	
+
+	const newChat = new db.Chat({ chatInitiator, userIds });
 	await newChat.save();
 	
-	chat = {
-		isNew: true,
-		message: 'Creating new chat',
-		chatId: newChat._doc._id
-	}
-	return chat;
+	const { id } = newChat;
+	return { id };
 }
 
 async function getChatsByUserId(id) {
@@ -67,7 +59,7 @@ async function createPostInChat (chatId, message, postedByUser) {
 				let: { postedByUser: '$postedByUser' },
 				pipeline: [
 					{ $match: { $expr: { $eq: ['$_id', '$$postedByUser'] } } },
-					{ $project: { _id: 1, firstName: 1, lastName: 1 } }
+					{ $project: { _id: 1, firstName: 1, lastName: 1, role: 1 } }
 				],
 				as: 'postedByUser'
 			}
@@ -92,7 +84,7 @@ async function createPostInChat (chatId, message, postedByUser) {
 				let: { userIds: '$chatInfo.userIds' },
 				pipeline: [
 					{ $match: { $expr: { $eq: ['$_id', '$$userIds'] } } },
-					{ $project: { _id: 1, firstName: 1, lastName: 1 } }
+					{ $project: { _id: 1, firstName: 1, lastName: 1, role: 1 } }
 				],
 				as: 'chatInfo.userProfile'
 			}
@@ -122,7 +114,7 @@ async function getConversationByChatId (chatId, options = {}) {
 
 	const aggregate = await db.Message.aggregate([
 		{ $match: { chatId } },
-		{ $sort: { createdAt: -1 } },
+		{ $sort: { createdAt: 1 } },
 		// Run lookup on Accounts collection and retrieve user info matching parameters
 		{
 			$lookup: {
@@ -131,16 +123,16 @@ async function getConversationByChatId (chatId, options = {}) {
 				let: { postedByUser: '$postedByUser' },
 				pipeline: [
 					{ $match: { $expr: { $eq: ['$_id', '$$postedByUser'] } } },
-					{ $project: { _id: 1, firstName: 1, lastName: 1 } }
+					{ $project: { _id: 1, firstName: 1, lastName: 1, role: 1 } }
 				],
 				as: 'postedByUser'
 			}
 		},
 		{ $unwind: "$postedByUser" },
 		// Apply Pagination
-		{ $skip: options.page * options.limit },
-		{ $limit: options.limit },
-		{ $sort: { createdAt: 1 } },
+		// { $skip: options.page * options.limit },
+		// { $limit: options.limit },
+		// { $sort: { createdAt: 1 } },
 	]);
 	return aggregate;
 }
@@ -168,7 +160,7 @@ async function getRecentChat (chatIds, options, currentOnlineUserId) {
 				let: { postedByUser: '$postedByUser' },
 				pipeline: [
 					{ $match: { $expr: { $eq: ['$_id', '$$postedByUser'] } } },
-					{ $project: { _id: 1, firstName: 1, lastName: 1 } }
+					{ $project: { _id: 1, firstName: 1, lastName: 1, role: 1 } }
 				],
 				as: 'postedByUser'
 			}
@@ -193,7 +185,7 @@ async function getRecentChat (chatIds, options, currentOnlineUserId) {
 				let: { userIds: '$chatInfo.userIds' },
 				pipeline: [
 					{ $match: { $expr: { $eq: ['$_id', '$$userIds'] } } },
-					{ $project: { _id: 1, firstName: 1, lastName: 1 } }
+					{ $project: { _id: 1, firstName: 1, lastName: 1, role: 1 } }
 				],
 				as: 'chatInfo.userProfile'
 			}
@@ -206,7 +198,7 @@ async function getRecentChat (chatIds, options, currentOnlineUserId) {
 				let: { readByUserId: '$readByRecipients.readByUserId' },
 				pipeline: [
 					{ $match: { $expr: { $eq: ['$_id', '$$readByUserId'] } } },
-					{ $project: { _id: 1, firstName: 1, lastName: 1 } }
+					{ $project: { _id: 1, firstName: 1, lastName: 1, role: 1 } }
 				],
 				as: 'readByRecipients.readByUser',
 			}
@@ -224,8 +216,8 @@ async function getRecentChat (chatIds, options, currentOnlineUserId) {
 			},
 		},
 		// Apply Pagination
-		{ $skip: options.page * options.limit },
-		{ $limit: options.limit }
+		// { $skip: options.page * options.limit },
+		// { $limit: options.limit }
 	]);
 	return aggregate;
 }

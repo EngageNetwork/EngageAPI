@@ -34,7 +34,7 @@ function postMsg(req, res, next) {
 	messageService.createPostInChat(chatId, msgPayload, account)
 	.then(post => {
 		res.status(200).json(post);
-		global.io.sockets.in(chatId).emit('New Message: ', { message: post });
+		global.io.sockets.in(chatId).emit('new message', { message: post });
 	})
 	.catch(next);
 }
