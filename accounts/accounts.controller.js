@@ -5,7 +5,6 @@ const validateRequest = require('_middleware/validate-request');
 const authorize = require('_middleware/authorize')
 const Role = require('_helpers/role');
 const accountService = require('./account.service');
-const profilePictureService = require('./profile-picture.service');
 
 // Routes
 router.post('/authenticate', authenticateSchema, authenticate);
@@ -22,8 +21,6 @@ router.get('/public/:id', authorize(), getByIdPublic);
 router.post('/create', authorize(Role.Admin), createSchema, create);
 router.put('/:id', authorize(), updateSchema, update);
 router.delete('/:id', authorize(), _delete);
-
-router.post('/uploadpfp', authorize(), uploadProfilePic);
 
 module.exports = router;
 
@@ -238,21 +235,6 @@ function _delete(req, res, next) {
 	accountService.delete(req.params.id)
 	.then(() => res.json({ message: 'Account deleted successfully' }))
 	.catch(next);
-}
-
-function uploadProfilePic(req, res, next) {
-	// try {
-	//     await upload(req, res);
-	
-	//     if (req.file == undefined) {
-	//         return res.status(400).json({ message: 'No file selected' });
-	//     }
-	
-	//     res.status(200).json({ message: 'Uploaded file successfully' });
-	// } catch (err) {
-	//     res.status(500).json({ message: 'File failed to upload' });
-	// }
-	profilePictureService.uploadpfp(req.file)
 }
 
 // Helper Functions
