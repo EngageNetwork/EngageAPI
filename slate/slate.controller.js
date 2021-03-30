@@ -18,6 +18,8 @@ router.get('/listing/:id', authorize(Role.Admin, Role.Tutor), getListingById);
 router.get('/mysessions', authorize(Role.Admin, Role.Student), getMySessions);
 router.get('/session/:id', authorize(Role.Admin, Role.Student), getSessionById);
 router.put('/update/:id', authorize(), updateSchema, update);
+router.put('/rating/content/:id', authorize(Role.Admin, Role.Student), submitContentRatingSchema, submitContentRating);
+router.put('/rating/behaviour/:id', authorize(), submitBehaviourRatingSchema, submitBehaviourRating);
 router.delete('/delete/:id', authorize(), _delete);
 
 module.exports = router;
@@ -118,6 +120,38 @@ function update(req, res, next) {
 	const endDateTime = new Date(req.body.endDateTime).toISOString();
 	slateService.update(account, id, { subject, startDateTime, endDateTime })
 	.then(listing => res.json(listing))
+	.catch(next);
+}
+
+function submitContentRatingSchema(req, res, next) {
+	const schema = Joi.object({
+		contentRating: Joi.number().required()
+	});
+	validateRequest(req, next, schema);
+}
+
+function submitContentRating(req, res, next) {
+	const account = req.user;
+	const id = req.params.id;
+	const tutorContentRatingByStudent = req.body.contentRating;
+	slateService.submitContentRating(account, id, { tutorContentRatingByStudent })
+	.then(() => res.json({ message: 'Content rating submitted successfully' }))
+	.catch(next);
+}
+
+function submitBehaviourRatingSchema(req, res, next) {
+	const schema = Joi.object({
+		behaviourRating: Joi.number().required()
+	});
+	validateRequest(req, next, schema);
+}
+
+function submitBehaviourRating(req, res, next) {
+	const account = req.user;
+	const id = req.params.id;
+	const behaviourRating = req.body.behaviourRating;
+	slateService.submitBehaviourRating(account, id, behaviourRating)
+	.then(() => res.json({ message: 'Behaviour rating submitted successfully' }))
 	.catch(next);
 }
 

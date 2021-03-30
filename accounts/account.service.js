@@ -15,6 +15,7 @@ module.exports = {
 	validateResetToken,
 	resetPassword,
 	getAll,
+	getUsersByIds,
 	getById,
 	getByIdPublic,
 	create,
@@ -87,6 +88,9 @@ async function register(params, origin) {
 		return await sendAlreadyRegisteredEmail(params.email, origin);
 	}
 	
+	// Prevent creation of administrator account
+	if (params.role == 'Admin') throw 'Unauthorized';
+
 	// Create account object
 	const account = new db.Account(params);
 	
@@ -160,6 +164,11 @@ async function resetPassword({ token, password }) {
 async function getAll() {
 	const accounts = await db.Account.find();
 	return accounts.map(x => basicDetails(x));
+}
+
+async function getUsersByIds(ids) {
+	const accounts = await db.Account.find({ _id: { $in: ids } });
+	return accounts;
 }
 
 async function getById(id) {
