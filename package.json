@@ -1,7 +1,9 @@
 {
-    "name": "engage-app-api",
+    "name": "engage-api",
     "version": "1.0.0",
     "description": "NodeJS + MongoDB API for Engage Web Application functions",
+    "author": "Michael Wang",
+    "license": "Proprietary",
     "scripts": {
         "start": "node ./server.js",
         "start:dev": "nodemon ./server.js"
@@ -19,10 +21,12 @@
         "mongoose": "^5.9.25",
         "nodemailer": "^6.4.6",
         "rootpath": "^0.1.2",
+        "socket.io": "^4.0.0",
         "swagger-ui-express": "^4.1.4",
+        "uuid": "^8.3.2",
         "yamljs": "^0.3.0"
     },
     "devDependencies": {
-        "nodemon": "^2.0.3"
+        "nodemon": "^2.0.7"
     }
 }
