@@ -1,5 +1,6 @@
 const sendEmail = require('_helpers/send-email');
 const db = require('_helpers/db');
+const mongoose = require('mongoose');
 const Role = require('_helpers/role');
 
 module.exports = {
@@ -86,17 +87,39 @@ async function getAllListings() {
 				as: 'accountDetails'
 			}
 		},
-		{ $unwind: "$accountDetails" }
+		{ $unwind: {
+			'path': '$accountDetails',
+			'preserveNullAndEmptyArrays': true
+		} }
 	]);
 	return aggregate;
 }
 
 async function getMyListings(account) {
-	const listings = await db.Slate.find({
-		account,
-		deleted: { $ne: true }
-	});
-	return listings.map(x => basicListingDetails(x));
+	var account = mongoose.Types.ObjectId(account);
+
+	const aggregate = await db.Slate.aggregate([
+		{ $match: { account: { $eq: account } } },
+		{ $match: { deleted: { $ne: true } } },
+		// Run lookup on Accounts collection and retrieve user info for registered (student)
+		{
+			$lookup: {
+				from: 'accounts',
+				// Filter out unnecessary data fields
+				let: { registered: '$registered' },
+				pipeline: [
+					{ $match: { $expr: { $eq: ['$_id', '$$registered'] } } },
+					{ $project: { _id: 1, firstName: 1, lastName: 1, role: 1 } }
+				],
+				as: 'registeredDetails'
+			}
+		},
+		{ $unwind: {
+			'path': '$registeredDetails',
+			'preserveNullAndEmptyArrays': true
+		} }
+	]);
+	return aggregate;
 }
 
 async function getListingById(id) {
@@ -107,11 +130,30 @@ async function getListingById(id) {
 }
 
 async function getMySessions(account) {
-	const sessions = await db.Slate.find({
-		registered: account,
-		deleted: { $ne: true }
-	});
-	return sessions.map(x => basicListingDetails(x));
+	var account = mongoose.Types.ObjectId(account);
+
+	const aggregate = await db.Slate.aggregate([
+		{ $match: { registered: { $eq: account } } },
+		{ $match: { deleted: { $ne: true } } },
+		// Run lookup on Accounts collection and retrieve user info for account (tutor)
+		{
+			$lookup: {
+				from: 'accounts',
+				// Filter out unnecessary data fields
+				let: { account: '$account' },
+				pipeline: [
+					{ $match: { $expr: { $eq: ['$_id', '$$account'] } } },
+					{ $project: { _id: 1, firstName: 1, lastName: 1, role: 1 } }
+				],
+				as: 'accountDetails'
+			}
+		},
+		{ $unwind: {
+			'path': '$accountDetails',
+			'preserveNullAndEmptyArrays': true
+		} }
+	]);
+	return aggregate;
 }
 
 async function getSessionById(id) {
@@ -188,7 +230,7 @@ async function submitContentRating(account, id, params) {
 	if (!session) throw 'Session not found';
 
 	// Verify submission came from registered student
-	// if (session.registered.toString() !== account.id) throw 'Unauthorized';
+	if (session.registered.toString() !== account.id) throw 'Unauthorized';
 
 	// Save content rating to database
 	Object.assign(session, params);
