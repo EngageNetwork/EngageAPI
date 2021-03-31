@@ -92,13 +92,13 @@ function getListingById(req, res, next) {
 function getMySessions(req, res, next) {
 	const account = req.user.id;
 	slateService.getMySessions(account)
-	.then(positions => res.json(positions))
+	.then(sessions => res.json(sessions))
 	.catch(next);
 }
 
 function getSessionById(req, res, next) {
 	slateService.getSessionById(req.params.id)
-	.then(position => position ? res.json(position) : res.sendStatus(404))
+	.then(session => session ? res.json(session) : res.sendStatus(404))
 	.catch(next)
 }
 
