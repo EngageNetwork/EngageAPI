@@ -14,6 +14,7 @@ module.exports = {
 	getMySessions,
 	getSessionById,
 	update,
+	recalculateTContentRating,
 	submitContentRating,
 	submitBehaviourRating,
 	delete: _delete
@@ -69,11 +70,25 @@ async function getSlateByIdAdmin(id) {
 }
 
 async function getAllListings() {
-	const listings = await db.Slate.find({
-		registered: { $eq: undefined },
-		deleted: { $ne: true }
-	});
-	return listings.map(x => basicListingDetails(x));
+	const aggregate = await db.Slate.aggregate([
+		{ $match: { registered: { $eq: undefined } } },
+		{ $match: { deleted: { $ne: true } } },
+		// Run lookup on Accounts collection and retrieve user info for account (tutor)
+		{
+			$lookup: {
+				from: 'accounts',
+				// Filter out unnecessary data fields
+				let: { account: '$account' },
+				pipeline: [
+					{ $match: { $expr: { $eq: ['$_id', '$$account'] } } },
+					{ $project: { _id: 1, firstName: 1, lastName: 1, role: 1 } }
+				],
+				as: 'accountDetails'
+			}
+		},
+		{ $unwind: "$accountDetails" }
+	]);
+	return aggregate;
 }
 
 async function getMyListings(account) {
@@ -122,13 +137,58 @@ async function update(account, id, params) {
 	return basicListingDetails(listing);
 }
 
+async function recalculateTContentRating(id) {
+	if (!db.isValidId(id)) throw 'Session not found';
+	const session = await getListing(id);
+	if (!session) throw 'Session not found';
+	
+	const account = await db.Account.findById(session.account);
+
+	const slates = await db.Slate.find({
+		account: { $eq: session.account },
+		subject: session.subject,
+		tutorContentRatingByStudent: { $exists: true }
+	});
+
+	var total = 0;
+	var values = 0;
+
+	slates.forEach(function (item) {
+		total += item.tutorContentRatingByStudent;
+		values += 1;
+	})
+
+	const avgRating = total / values;
+
+	switch(session.subject) {
+		case 'Math':
+			params = { mathContentRating: avgRating };
+			break;
+		case 'Science':
+			params = { scienceContentRating: avgRating };
+			break;
+		case 'Social Studies':
+			params = { socialStudiesContentRating: avgRating };
+			break;
+		case 'Language Arts':
+			params = { languageArtsContentRating: avgRating };
+			break;
+		case 'Foreign Language Acquisition':
+			params = { foreignLanguageAcquisitionContentRating: avgRating };
+			break;
+	}
+
+	Object.assign(account, params);
+	await account.save();
+}
+
 async function submitContentRating(account, id, params) {
 	if (!db.isValidId(id)) throw 'Session not found';
 	const session = await getListing(id);
 	if (!session) throw 'Session not found';
 
 	// Verify submission came from registered student
-	if (session.registered.toString() !== account.id) throw 'Unauthorized';
+	// if (session.registered.toString() !== account.id) throw 'Unauthorized';
 
 	// Save content rating to database
 	Object.assign(session, params);
@@ -180,6 +240,28 @@ async function getListing(id) {
 	const listing = await db.Slate.findById(id);
 	if (!listing) throw 'Listing not found';
 	return listing;
+}
+
+async function aggregateAllAvailable() {
+	const aggregate = await db.Slate.aggregate([
+		{ $match: { registered: { $eq: undefined } } },
+		{ $match: { deleted: { $ne: true } } },
+		// Run lookup on Accounts collection and retrieve user info for account (tutor)
+		{
+			$lookup: {
+				from: 'accounts',
+				// Filter out unnecessary data fields
+				let: { account: '$account' },
+				pipeline: [
+					{ $match: { $expr: { $eq: ['$_id', '$$account'] } } },
+					{ $project: { _id: 1, firstName: 1, lastName: 1, role: 1 } }
+				],
+				as: 'accountDetails'
+			}
+		},
+		{ $unwind: "$accountDetails" }
+	]);
+	return aggregate;
 }
 
 function basicListingDetails(listing) {
