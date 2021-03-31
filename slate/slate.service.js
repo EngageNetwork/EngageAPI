@@ -59,8 +59,43 @@ async function cancel(account, id) {
 }
 
 async function getAllAdmin() {
-	const listings = await db.Slate.find();
-	return listings.map(x => allListingDetails(x));
+	const aggregate = await db.Slate.aggregate([
+		// Run lookup on Accounts collection and retrieve user info for account (tutor)
+		{
+			$lookup: {
+				from: 'accounts',
+				// Filter out unnecessary data fields
+				let: { account: '$account' },
+				pipeline: [
+					{ $match: { $expr: { $eq: ['$_id', '$$account'] } } },
+					{ $project: { _id: 1, firstName: 1, lastName: 1, role: 1 } }
+				],
+				as: 'accountDetails'
+			}
+		},
+		{ $unwind: {
+			'path': '$accountDetails',
+			'preserveNullAndEmptyArrays': true
+		} },
+		// Run lookup on Accounts collection and retrieve user info for registered (student)
+		{
+			$lookup: {
+				from: 'accounts',
+				// Filter out unnecessary data fields
+				let: { registered: '$registered' },
+				pipeline: [
+					{ $match: { $expr: { $eq: ['$_id', '$$registered'] } } },
+					{ $project: { _id: 1, firstName: 1, lastName: 1, role: 1 } }
+				],
+				as: 'registeredDetails'
+			}
+		},
+		{ $unwind: {
+			'path': '$registeredDetails',
+			'preserveNullAndEmptyArrays': true
+		} }
+	]);
+	return aggregate;
 }
 
 async function getSlateByIdAdmin(id) {
