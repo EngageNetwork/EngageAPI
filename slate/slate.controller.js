@@ -149,8 +149,6 @@ function submitContentRating(req, res, next) {
 	slateService.submitContentRating(account, id, { tutorContentRatingByStudent })
 	.then(() => res.json({ message: 'Content rating submitted successfully' }))
 	.catch(next);
-
-	slateService.recalculateTContentRating(id);
 }
 
 function submitBehaviourRatingSchema(req, res, next) {
@@ -168,8 +166,6 @@ function submitBehaviourRating(req, res, next) {
 	slateService.submitBehaviourRating(account, id, behaviourRating)
 	.then(() => res.json({ message: 'Behaviour rating submitted successfully' }))
 	.catch(next);
-
-	
 }
 
 function _delete(req, res, next) {

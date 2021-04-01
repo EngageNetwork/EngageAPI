@@ -309,11 +309,42 @@ async function update(account, id, params) {
 	return basicListingDetails(listing);
 }
 
-async function recalculateTContentRating(id) {
-	if (!db.isValidId(id)) throw 'Session not found';
+async function recalculateOverallTContentRating(id) {
 	const session = await getListing(id);
-	if (!session) throw 'Session not found';
-	
+	const account = await db.Account.findById(session.account);
+
+	var total = 0;
+	var values = 0;
+
+	if (!!account.mathContentRating) {
+		total += account.mathContentRating;
+		values += 1;
+	}
+	if (!!account.scienceContentRating) {
+		total += account.scienceContentRating;
+		values += 1;
+	}
+	if (!!account.socialStudiesContentRating) {
+		total += account.socialStudiesContentRating;
+		values += 1;
+	}
+	if (!!account.languageArtsContentRating) {
+		total += account.languageArtsContentRating;
+		values += 1;
+	}
+	if (!!account.foreignLanguageAcquisitionContentRating) {
+		total += account.foreignLanguageAcquisitionContentRating;
+		values += 1;
+	}
+
+	const avgRating = total / values;
+
+	Object.assign(account, { overallContentRating: avgRating });
+	await account.save();
+}
+
+async function recalculateTContentRating(id) {
+	const session = await getListing(id);
 	const account = await db.Account.findById(session.account);
 
 	const slates = await db.Slate.find({
@@ -354,6 +385,53 @@ async function recalculateTContentRating(id) {
 	await account.save();
 }
 
+async function recalculateTBehaviourRating(id) {
+	const session = await getListing(id);
+	const account = await db.Account.findById(session.account);
+
+	const slates = await db.Slate.find({
+		account: { $eq: session.account },
+		tutorBehaviourRatingByStudent: { $exists: true }
+	});
+
+	var total = 0;
+	var values = 0;
+
+	slates.forEach(function (item) {
+		total += item.tutorBehaviourRatingByStudent;
+		values += 1;
+	})
+
+	const avgRating = total / values;
+
+	Object.assign(account, { behaviourRating: avgRating });
+	await account.save();
+}
+
+async function recalculateSBehaviourRating(id) {
+	const session = await getListing(id);
+
+	const account = await db.Account.findById(session.registered);
+
+	const slates = await db.Slate.find({
+		registered: { $eq: session.registered },
+		studentBehaviourRatingByTutor: { $exists: true }
+	});
+
+	var total = 0;
+	var values = 0;
+
+	slates.forEach(function (item) {
+		total += item.studentBehaviourRatingByTutor;
+		values += 1;
+	})
+
+	const avgRating = total / values;
+
+	Object.assign(account, { behaviourRating: avgRating });
+	await account.save();
+}
+
 async function submitContentRating(account, id, params) {
 	if (!db.isValidId(id)) throw 'Session not found';
 	const session = await getListing(id);
@@ -365,6 +443,12 @@ async function submitContentRating(account, id, params) {
 	// Save content rating to database
 	Object.assign(session, params);
 	await session.save();
+
+	// Recalculate Content Rating
+	recalculateTContentRating(id);
+
+	// Recalculate Overall Rating
+	recalculateOverallTContentRating(id);
 }
 
 async function submitBehaviourRating(account, id, behaviourRating) {
@@ -382,6 +466,9 @@ async function submitBehaviourRating(account, id, behaviourRating) {
 		params = { studentBehaviourRatingByTutor };
 		Object.assign(session, params);
 		await session.save();
+
+		// Recalculate Behaviour Rating
+		recalculateSBehaviourRating(id);
 	}
 	// From Student
 	if (session.registered.toString() === account.id) {
@@ -389,6 +476,9 @@ async function submitBehaviourRating(account, id, behaviourRating) {
 		params = { tutorBehaviourRatingByStudent };
 		Object.assign(session, params);
 		await session.save();
+
+		// Recalculate Behaviour Rating
+		recalculateTBehaviourRating(id);
 	}
 }
 
