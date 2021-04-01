@@ -105,7 +105,6 @@ async function createPostInChat (chatId, message, postedByUser) {
 			}
 		}
 	]);
-	console.log(aggregate);
 	return aggregate[0];
 }
 
