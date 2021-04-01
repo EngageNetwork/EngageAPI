@@ -201,10 +201,36 @@ async function getMyListings(account) {
 }
 
 async function getListingById(id) {
+	// Validate Supplied ID
 	if (!db.isValidId(id)) throw 'Listing not found';
 	const listing = await db.Slate.findById(id);
 	if (!listing) throw 'Listing not found';
-	return basicListingDetails(listing);
+
+	// Convert ID to ObjectID
+	var id = mongoose.Types.ObjectId(id);
+
+	// Aggregate Data and Return	
+	const aggregate = await db.Slate.aggregate([
+		{ $match: { _id: { $eq: id } } },
+		// Run lookup on Accounts collection and retrieve user info for registered (student)
+		{
+			$lookup: {
+				from: 'accounts',
+				// Filter out unnecessary data fields
+				let: { registered: '$registered' },
+				pipeline: [
+					{ $match: { $expr: { $eq: ['$_id', '$$registered'] } } },
+					{ $project: { _id: 1, firstName: 1, lastName: 1, role: 1 } }
+				],
+				as: 'registeredDetails'
+			}
+		},
+		{ $unwind: {
+			'path': '$registeredDetails',
+			'preserveNullAndEmptyArrays': true
+		} }
+	]);
+	return aggregate[0];
 }
 
 async function getMySessions(account) {
@@ -235,10 +261,36 @@ async function getMySessions(account) {
 }
 
 async function getSessionById(id) {
+	// Validate Supplied ID
 	if (!db.isValidId(id)) throw 'Session not found';
 	const session = await db.Slate.findById(id);
 	if (!session) throw 'Session not found';
-	return basicListingDetails(session);
+	
+	// Convert ID to ObjectID
+	var id = mongoose.Types.ObjectId(id);
+
+	// Aggregate Data and Return
+	const aggregate = await db.Slate.aggregate([
+		{ $match: { _id: { $eq: id } } },
+		// Run lookup on Accounts collection and retrieve user info for account (tutor)
+		{
+			$lookup: {
+				from: 'accounts',
+				// Filter out unnecessary data fields
+				let: { account: '$account' },
+				pipeline: [
+					{ $match: { $expr: { $eq: ['$_id', '$$account'] } } },
+					{ $project: { _id: 1, firstName: 1, lastName: 1, role: 1 } }
+				],
+				as: 'accountDetails'
+			}
+		},
+		{ $unwind: {
+			'path': '$accountDetails',
+			'preserveNullAndEmptyArrays': true
+		} }
+	]);
+	return aggregate[0];
 }
 
 async function update(account, id, params) {
