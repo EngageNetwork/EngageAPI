@@ -71,7 +71,7 @@ function getAllAdmin(req, res, next) {
 function getSlateByIdAdmin(req, res, next) {
 	
 	slateService.getSlateByIdAdmin(req.params.id)
-	.then(listing => listing ? res.json(listing) : res.sendStatus(404))
+	.then(slate => slate ? res.json(slate) : res.sendStatus(404))
 	.catch(next);
 }
 

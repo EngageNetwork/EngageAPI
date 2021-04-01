@@ -99,10 +99,53 @@ async function getAllAdmin() {
 }
 
 async function getSlateByIdAdmin(id) {
+	// Validate supplied ID
 	if (!db.isValidId(id)) throw 'Listing not found';
 	const listing = await db.Slate.findById(id);
 	if (!listing) throw 'Listing not found';
-	return allListingDetails(listing);
+
+	// Convert ID to ObjectID
+	var id = mongoose.Types.ObjectId(id);
+
+	// Aggregate Data and Return
+	const aggregate = await db.Slate.aggregate([
+		{ $match: { _id: { $eq: id } } },
+		// Run lookup on Accounts collection and retrieve user info for account (tutor)
+		{
+			$lookup: {
+				from: 'accounts',
+				// Filter out unnecessary data fields
+				let: { account: '$account' },
+				pipeline: [
+					{ $match: { $expr: { $eq: ['$_id', '$$account'] } } },
+					{ $project: { _id: 1, firstName: 1, lastName: 1, role: 1 } }
+				],
+				as: 'accountDetails'
+			}
+		},
+		{ $unwind: {
+			'path': '$accountDetails',
+			'preserveNullAndEmptyArrays': true
+		} },
+		// Run lookup on Accounts collection and retrieve user info for registered (student)
+		{
+			$lookup: {
+				from: 'accounts',
+				// Filter out unnecessary data fields
+				let: { registered: '$registered' },
+				pipeline: [
+					{ $match: { $expr: { $eq: ['$_id', '$$registered'] } } },
+					{ $project: { _id: 1, firstName: 1, lastName: 1, role: 1 } }
+				],
+				as: 'registeredDetails'
+			}
+		},
+		{ $unwind: {
+			'path': '$registeredDetails',
+			'preserveNullAndEmptyArrays': true
+		} }
+	]);
+	return aggregate[0];
 }
 
 async function getAllListings() {
