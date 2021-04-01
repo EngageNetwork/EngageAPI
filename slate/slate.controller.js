@@ -7,9 +7,9 @@ const Role = require('_helpers/role');
 const slateService = require('./slate.service');
 
 // Routes
-router.post('/create', authorize(), createListingSchema, createListing);
-router.post('/register/:id', authorize(), register);
-router.post('/cancel/:id', authorize(), cancel);
+router.post('/create', authorize(Role.Admin, Role.Tutor), createListingSchema, createListing);
+router.post('/register/:id', authorize(Role.Admin, Role.Student), register);
+router.post('/cancel/:id', authorize(Role.Admin, Role.Student), cancel);
 router.get('/', authorize(Role.Admin), getAllAdmin);
 router.get('/slate/:id', authorize(Role.Admin), getSlateByIdAdmin);
 router.get('/listings', authorize(Role.Admin, Role.Student), getAllListings);
@@ -17,10 +17,11 @@ router.get('/mylistings', authorize(Role.Admin, Role.Tutor), getMyListings);
 router.get('/listing/:id', authorize(Role.Admin, Role.Tutor), getListingById);
 router.get('/mysessions', authorize(Role.Admin, Role.Student), getMySessions);
 router.get('/session/:id', authorize(Role.Admin, Role.Student), getSessionById);
-router.put('/update/:id', authorize(), updateSchema, update);
+router.put('/update/:id', authorize(Role.Admin, Role.Tutor), updateSchema, update);
+router.put('/markcomplete/:id', authorize(Role.Admin, Role.Tutor, Role.Student), markComplete);
 router.put('/rating/content/:id', authorize(Role.Admin, Role.Student), submitContentRatingSchema, submitContentRating);
-router.put('/rating/behaviour/:id', authorize(), submitBehaviourRatingSchema, submitBehaviourRating);
-router.delete('/delete/:id', authorize(), _delete);
+router.put('/rating/behaviour/:id', authorize(Role.Admin, Role.Tutor, Role.Student), submitBehaviourRatingSchema, submitBehaviourRating);
+router.delete('/delete/:id', authorize(Role.Admin, Role.Tutor), _delete);
 
 module.exports = router;
 
@@ -131,6 +132,15 @@ function update(req, res, next) {
 	
 	slateService.update(account, id, { subject, startDateTime, endDateTime })
 	.then(listing => res.json(listing))
+	.catch(next);
+}
+
+function markComplete(req, res, next) {
+	const account = req.user;
+	const id = req.params.id;
+
+	slateService.markComplete(account, id)
+	.then(() => res.json({ message: 'Marked as complete successfully' }))
 	.catch(next);
 }
 

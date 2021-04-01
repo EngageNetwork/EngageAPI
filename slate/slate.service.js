@@ -15,6 +15,7 @@ module.exports = {
 	getMySessions,
 	getSessionById,
 	update,
+	markComplete,
 	recalculateTContentRating,
 	submitContentRating,
 	submitBehaviourRating,
@@ -34,28 +35,25 @@ async function createListing(params) {
 }
 
 async function register(account, id) {
-	if (!db.isValidId(id)) throw 'Position not found';
-	const position = await db.Slate.findById(id);
-	if (!position) throw 'Position not found';
+	const session = await getSession(id);
 	
 	// Final check to ensure no one else is already registered
-	if (!!position.registered) throw 'Position already filled';
+	if (!!session.registered) throw 'Session already taken';
 	
 	// Register user to listing
-	position.registered = account;
-	position.registerDate = Date.now();
-	await position.save();
+	session.registered = account;
+	session.registerDate = Date.now();
+	await session.save();
 }
 
 async function cancel(account, id) {
-	if (!db.isValidId(id)) throw 'Position not found';
-	const position = await db.Slate.findById(id);
-	if (!position) throw 'Position not found';
-	if (position.registered.toString() !== account) throw 'Unauthorized';
-	
-	position.registered = undefined;
-	position.registerDate = undefined;
-	await position.save();
+	const session = await getSession(id);
+
+	if (session.registered.toString() !== account) throw 'Unauthorized';
+
+	session.registered = undefined;
+	session.registerDate = undefined;
+	await session.save();
 }
 
 async function getAllAdmin() {
@@ -100,9 +98,9 @@ async function getAllAdmin() {
 
 async function getSlateByIdAdmin(id) {
 	// Validate supplied ID
-	if (!db.isValidId(id)) throw 'Listing not found';
-	const listing = await db.Slate.findById(id);
-	if (!listing) throw 'Listing not found';
+	if (!db.isValidId(id)) throw 'Slate not found';
+	const slate = await db.Slate.findById(id);
+	if (!slate) throw 'Slate not found';
 
 	// Convert ID to ObjectID
 	var id = mongoose.Types.ObjectId(id);
@@ -202,9 +200,7 @@ async function getMyListings(account) {
 
 async function getListingById(id) {
 	// Validate Supplied ID
-	if (!db.isValidId(id)) throw 'Listing not found';
-	const listing = await db.Slate.findById(id);
-	if (!listing) throw 'Listing not found';
+	await getListing(id);
 
 	// Convert ID to ObjectID
 	var id = mongoose.Types.ObjectId(id);
@@ -262,9 +258,7 @@ async function getMySessions(account) {
 
 async function getSessionById(id) {
 	// Validate Supplied ID
-	if (!db.isValidId(id)) throw 'Session not found';
-	const session = await db.Slate.findById(id);
-	if (!session) throw 'Session not found';
+	await getSession(id);
 	
 	// Convert ID to ObjectID
 	var id = mongoose.Types.ObjectId(id);
@@ -294,9 +288,7 @@ async function getSessionById(id) {
 }
 
 async function update(account, id, params) {
-	if (!db.isValidId(id)) throw 'Listing not found';
 	const listing = await getListing(id);
-	if (!listing) throw 'Listing not found';
 	
 	// Users can update their listings and admins can update any listing
 	if (listing.account.toString() !== account.id && account.role !== Role.Admin) throw 'Unauthorized';
@@ -309,8 +301,43 @@ async function update(account, id, params) {
 	return basicListingDetails(listing);
 }
 
+async function markComplete(account, id) {
+	const session = await getSession(id);
+
+	// Verify submission came from session tutor or registered student
+	if (session.account.toString() !== account.id && session.registered.toString() !== account.id) throw 'Unauthorized';
+
+	// Branch based on if submission is from tutor or student
+	// From Tutor
+	if (session.account.toString() === account.id) {
+		// If not marked as complete, mark as complete
+		if (!session.markedCompletedTutor) {
+			session.markedCompletedTutor = true;
+			await session.save();
+		}
+		// If marked as complete, unmark as complete
+		else if (!!session.markedCompletedTutor) {
+			session.markedCompletedTutor = undefined;
+			await session.save();
+		}
+	}
+	// From Student
+	if (session.registered.toString() === account.id) {
+		// If not marked as complete, mark as complete
+		if (!session.markedCompletedStudent) {
+			session.markedCompletedStudent = true;
+			await session.save();
+		}
+		// If marked as complete, unmark as complete
+		else if (!!session.markedCompletedStudent) {
+			session.markedCompletedStudent = undefined;
+			await session.save();
+		}
+	}
+}
+
 async function recalculateOverallTContentRating(id) {
-	const session = await getListing(id);
+	const session = await getSession(id);
 	const account = await db.Account.findById(session.account);
 
 	var total = 0;
@@ -344,7 +371,7 @@ async function recalculateOverallTContentRating(id) {
 }
 
 async function recalculateTContentRating(id) {
-	const session = await getListing(id);
+	const session = await getSession(id);
 	const account = await db.Account.findById(session.account);
 
 	const slates = await db.Slate.find({
@@ -386,7 +413,7 @@ async function recalculateTContentRating(id) {
 }
 
 async function recalculateTBehaviourRating(id) {
-	const session = await getListing(id);
+	const session = await getSession(id);
 	const account = await db.Account.findById(session.account);
 
 	const slates = await db.Slate.find({
@@ -409,8 +436,7 @@ async function recalculateTBehaviourRating(id) {
 }
 
 async function recalculateSBehaviourRating(id) {
-	const session = await getListing(id);
-
+	const session = await getSession(id);
 	const account = await db.Account.findById(session.registered);
 
 	const slates = await db.Slate.find({
@@ -433,9 +459,7 @@ async function recalculateSBehaviourRating(id) {
 }
 
 async function submitContentRating(account, id, params) {
-	if (!db.isValidId(id)) throw 'Session not found';
-	const session = await getListing(id);
-	if (!session) throw 'Session not found';
+	const session = await getSession(id);
 
 	// Verify submission came from registered student
 	if (session.registered.toString() !== account.id) throw 'Unauthorized';
@@ -452,9 +476,7 @@ async function submitContentRating(account, id, params) {
 }
 
 async function submitBehaviourRating(account, id, behaviourRating) {
-	if (!db.isValidId(id)) throw 'Session not found';
-	const session = await getListing(id);
-	if (!session) throw 'Session not found';
+	const session = await getSession(id);
 
 	// Verify submission came from listing tutor or registered student
 	if (session.account.toString() !== account.id && session.registered.toString() !== account.id) throw 'Unauthorized';
@@ -483,13 +505,14 @@ async function submitBehaviourRating(account, id, behaviourRating) {
 }
 
 async function _delete(account, id) {
-	if (!db.isValidId(id)) throw 'Listing not found';
-	const listing = await db.Slate.findById(id);
-	if (!listing) throw 'Listing not found';
+	const listing = await getListing(id);
 	
 	// Users can delete their listings and admins can delete any listing
 	if (listing.account.toString() !== account.id && account.role !== Role.Admin) throw 'Unauthorized';
 	
+	// Ensure no one is registered
+	if (!!listing.registered) throw 'Unable to delete: Student registered'
+
 	listing.deleted = true;
 	listing.deleteDate = Date.now();
 	await listing.save();
@@ -504,26 +527,11 @@ async function getListing(id) {
 	return listing;
 }
 
-async function aggregateAllAvailable() {
-	const aggregate = await db.Slate.aggregate([
-		{ $match: { registered: { $eq: undefined } } },
-		{ $match: { deleted: { $ne: true } } },
-		// Run lookup on Accounts collection and retrieve user info for account (tutor)
-		{
-			$lookup: {
-				from: 'accounts',
-				// Filter out unnecessary data fields
-				let: { account: '$account' },
-				pipeline: [
-					{ $match: { $expr: { $eq: ['$_id', '$$account'] } } },
-					{ $project: { _id: 1, firstName: 1, lastName: 1, role: 1 } }
-				],
-				as: 'accountDetails'
-			}
-		},
-		{ $unwind: "$accountDetails" }
-	]);
-	return aggregate;
+async function getSession(id) {
+	if (!db.isValidId(id)) throw 'Session not found';
+	const session = await db.Slate.findById(id);
+	if (!session) throw 'Session not found';
+	return session;
 }
 
 function basicListingDetails(listing) {
