@@ -272,8 +272,8 @@ function basicDetails(account) {
 }
 
 function publicDetails(account) {
-	const { id, firstName, lastName, role, behaviourRating, overallContentRating, mathContentRating, scienceContentRating, socialStudiesContentRating, languageArtsContentRating, ForeignLanguageAcquisitionContentRating } = account;
-	return { id, firstName, lastName, role, behaviourRating, overallContentRating, mathContentRating, scienceContentRating, socialStudiesContentRating, languageArtsContentRating, ForeignLanguageAcquisitionContentRating };
+	const { id, firstName, lastName, role, behaviourRating, contentRatings } = account;
+	return { id, firstName, lastName, role, behaviourRating, contentRatings };
 }
 
 async function sendVerificationEmail(account, origin) {
