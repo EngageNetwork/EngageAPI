@@ -336,21 +336,21 @@ async function markComplete(account, id) {
 	}
 }
 
-async function submitContentRating(account, id, params) {
+async function submitContentRating(account, id, contentRating) {
 	const session = await getSession(id);
 
 	// Verify submission came from registered student
 	if (session.registered.toString() !== account.id) throw 'Unauthorized';
 
 	// Save content rating to database
-	Object.assign(session, params);
+	session.tutorContentRatingByStudent = contentRating;
 	await session.save();
 
 	// Recalculate Content Rating
-	backgroundTasks.recalculateTContentRating(id);
+	await backgroundTasks.recalculateTContentRating(id);
 
 	// Recalculate Overall Rating
-	backgroundTasks.recalculateOverallTContentRating(id);
+	await backgroundTasks.recalculateOverallTContentRating(id);
 }
 
 async function submitBehaviourRating(account, id, behaviourRating) {
@@ -362,23 +362,21 @@ async function submitBehaviourRating(account, id, behaviourRating) {
 	// Branch based on if submission is from tutor or student
 	// From Tutor
 	if (session.account.toString() === account.id) {
-		studentBehaviourRatingByTutor = behaviourRating;
-		params = { studentBehaviourRatingByTutor };
-		Object.assign(session, params);
+		// Save Behaviour Rating
+		session.studentBehaviourRatingByTutor = behaviourRating;
 		await session.save();
 
 		// Recalculate Behaviour Rating
-		backgroundTasks.recalculateSBehaviourRating(id);
+		await backgroundTasks.recalculateSBehaviourRating(id);
 	}
 	// From Student
 	if (session.registered.toString() === account.id) {
-		tutorBehaviourRatingByStudent = behaviourRating;
-		params = { tutorBehaviourRatingByStudent };
-		Object.assign(session, params);
+		// Save Behaviour Rating
+		session.tutorBehaviourRatingByStudent = behaviourRating;
 		await session.save();
 
 		// Recalculate Behaviour Rating
-		backgroundTasks.recalculateTBehaviourRating(id);
+		await backgroundTasks.recalculateTBehaviourRating(id);
 	}
 }
 

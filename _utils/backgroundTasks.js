@@ -2,10 +2,15 @@ const db = require('_helpers/db');
 const mongoose = require('mongoose');
 
 module.exports = {
+	recalculateTHours,
 	recalculateOverallTContentRating,
     recalculateTContentRating,
     recalculateTBehaviourRating,
     recalculateSBehaviourRating
+}
+
+async function recalculateTHours(id) {
+	
 }
 
 async function recalculateOverallTContentRating(id) {
@@ -15,30 +20,30 @@ async function recalculateOverallTContentRating(id) {
 	var total = 0;
 	var values = 0;
 
-	if (!!account.mathContentRating) {
-		total += account.mathContentRating;
+	if (!!account.contentRatings.mathContentRating) {
+		total += account.contentRatings.mathContentRating;
 		values += 1;
 	}
-	if (!!account.scienceContentRating) {
-		total += account.scienceContentRating;
+	if (!!account.contentRatings.scienceContentRating) {
+		total += account.contentRatings.scienceContentRating;
 		values += 1;
 	}
-	if (!!account.socialStudiesContentRating) {
-		total += account.socialStudiesContentRating;
+	if (!!account.contentRatings.socialStudiesContentRating) {
+		total += account.contentRatings.socialStudiesContentRating;
 		values += 1;
 	}
-	if (!!account.languageArtsContentRating) {
-		total += account.languageArtsContentRating;
+	if (!!account.contentRatings.languageArtsContentRating) {
+		total += account.contentRatings.languageArtsContentRating;
 		values += 1;
 	}
-	if (!!account.foreignLanguageAcquisitionContentRating) {
-		total += account.foreignLanguageAcquisitionContentRating;
+	if (!!account.contentRatings.foreignLanguageAcquisitionContentRating) {
+		total += account.contentRatings.foreignLanguageAcquisitionContentRating;
 		values += 1;
 	}
 
 	const avgRating = total / values;
 
-	Object.assign(account, { overallContentRating: avgRating });
+	account.contentRatings.overallContentRating = avgRating;
 	await account.save();
 }
 
@@ -64,23 +69,22 @@ async function recalculateTContentRating(id) {
 
 	switch(session.subject) {
 		case 'Math':
-			params = { mathContentRating: avgRating };
+			account.contentRatings.mathContentRating = avgRating;
 			break;
 		case 'Science':
-			params = { scienceContentRating: avgRating };
+			account.contentRatings.scienceContentRating = avgRating;
 			break;
 		case 'Social Studies':
-			params = { socialStudiesContentRating: avgRating };
+			account.contentRatings.socialStudiesContentRating = avgRating;
 			break;
 		case 'Language Arts':
-			params = { languageArtsContentRating: avgRating };
+			account.contentRatings.languageArtsContentRating = avgRating;
 			break;
 		case 'Foreign Language Acquisition':
-			params = { foreignLanguageAcquisitionContentRating: avgRating };
+			account.contentRatings.foreignLanguageAcquisitionContentRating = avgRating;
 			break;
 	}
 
-	Object.assign(account, params);
 	await account.save();
 }
 

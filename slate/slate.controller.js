@@ -154,9 +154,9 @@ function submitContentRatingSchema(req, res, next) {
 function submitContentRating(req, res, next) {
 	const account = req.user;
 	const id = req.params.id;
-	const tutorContentRatingByStudent = req.body.contentRating;
+	const contentRating = req.body.contentRating;
 	
-	slateService.submitContentRating(account, id, { tutorContentRatingByStudent })
+	slateService.submitContentRating(account, id, contentRating)
 	.then(() => res.json({ message: 'Content rating submitted successfully' }))
 	.catch(next);
 }
