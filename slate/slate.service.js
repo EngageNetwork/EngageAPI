@@ -66,7 +66,7 @@ async function getAllAdmin() {
 				let: { account: '$account' },
 				pipeline: [
 					{ $match: { $expr: { $eq: ['$_id', '$$account'] } } },
-					{ $project: { _id: 1, firstName: 1, lastName: 1, role: 1 } }
+					{ $project: { _id: 1, firstName: 1, lastName: 1, role: 1, contentRatings: 1, behaviourRating: 1 } }
 				],
 				as: 'accountDetails'
 			}
@@ -83,7 +83,7 @@ async function getAllAdmin() {
 				let: { registered: '$registered' },
 				pipeline: [
 					{ $match: { $expr: { $eq: ['$_id', '$$registered'] } } },
-					{ $project: { _id: 1, firstName: 1, lastName: 1, role: 1 } }
+					{ $project: { _id: 1, firstName: 1, lastName: 1, role: 1, behaviourRating: 1 } }
 				],
 				as: 'registeredDetails'
 			}
@@ -116,7 +116,7 @@ async function getSlateByIdAdmin(id) {
 				let: { account: '$account' },
 				pipeline: [
 					{ $match: { $expr: { $eq: ['$_id', '$$account'] } } },
-					{ $project: { _id: 1, firstName: 1, lastName: 1, role: 1 } }
+					{ $project: { _id: 1, firstName: 1, lastName: 1, role: 1, contentRatings: 1, behaviourRating: 1 } }
 				],
 				as: 'accountDetails'
 			}
@@ -133,7 +133,7 @@ async function getSlateByIdAdmin(id) {
 				let: { registered: '$registered' },
 				pipeline: [
 					{ $match: { $expr: { $eq: ['$_id', '$$registered'] } } },
-					{ $project: { _id: 1, firstName: 1, lastName: 1, role: 1 } }
+					{ $project: { _id: 1, firstName: 1, lastName: 1, role: 1, behaviourRating: 1 } }
 				],
 				as: 'registeredDetails'
 			}
@@ -158,7 +158,7 @@ async function getAllListings() {
 				let: { account: '$account' },
 				pipeline: [
 					{ $match: { $expr: { $eq: ['$_id', '$$account'] } } },
-					{ $project: { _id: 1, firstName: 1, lastName: 1, role: 1 } }
+					{ $project: { _id: 1, firstName: 1, lastName: 1, role: 1, contentRatings: 1, behaviourRating: 1 } }
 				],
 				as: 'accountDetails'
 			}
@@ -185,7 +185,7 @@ async function getMyListings(account) {
 				let: { registered: '$registered' },
 				pipeline: [
 					{ $match: { $expr: { $eq: ['$_id', '$$registered'] } } },
-					{ $project: { _id: 1, firstName: 1, lastName: 1, role: 1 } }
+					{ $project: { _id: 1, firstName: 1, lastName: 1, role: 1, behaviourRating: 1 } }
 				],
 				as: 'registeredDetails'
 			}
@@ -216,7 +216,7 @@ async function getListingById(id) {
 				let: { registered: '$registered' },
 				pipeline: [
 					{ $match: { $expr: { $eq: ['$_id', '$$registered'] } } },
-					{ $project: { _id: 1, firstName: 1, lastName: 1, role: 1 } }
+					{ $project: { _id: 1, firstName: 1, lastName: 1, role: 1, behaviourRating: 1 } }
 				],
 				as: 'registeredDetails'
 			}
@@ -243,7 +243,7 @@ async function getMySessions(account) {
 				let: { account: '$account' },
 				pipeline: [
 					{ $match: { $expr: { $eq: ['$_id', '$$account'] } } },
-					{ $project: { _id: 1, firstName: 1, lastName: 1, role: 1 } }
+					{ $project: { _id: 1, firstName: 1, lastName: 1, role: 1, contentRatings: 1, behaviourRating: 1 } }
 				],
 				as: 'accountDetails'
 			}
@@ -274,7 +274,7 @@ async function getSessionById(id) {
 				let: { account: '$account' },
 				pipeline: [
 					{ $match: { $expr: { $eq: ['$_id', '$$account'] } } },
-					{ $project: { _id: 1, firstName: 1, lastName: 1, role: 1 } }
+					{ $project: { _id: 1, firstName: 1, lastName: 1, role: 1, contentRatings: 1, behaviourRating: 1 } }
 				],
 				as: 'accountDetails'
 			}
