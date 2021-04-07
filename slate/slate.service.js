@@ -34,7 +34,7 @@ async function createListing(params) {
 	await listing.save();
 }
 
-async function register(account, id) {
+async function register(account, id, origin) {
 	const session = await getSession(id);
 	
 	// Final check to ensure no one else is already registered
@@ -44,6 +44,10 @@ async function register(account, id) {
 	session.registered = account;
 	session.registerDate = Date.now();
 	await session.save();
+
+	// Send notification email
+	sendStudentSessionRegistrationEmail(origin, session);
+	sendTutorListingFilledEmail(origin, session)
 }
 
 async function cancel(account, id) {
@@ -415,35 +419,42 @@ function basicListingDetails(listing) {
 	return { id, account, created, subject, startDateTime, endDateTime, registered, markedCompletedStudent, markedCompletedTutor };
 }
 
-function allListingDetails(listing) {
-	const { id, account, created, updated, subject, startDateTime, endDateTime, registered, registerDate, markedCompletedStudent, markedCompletedTutor, deleted, deleteDate } = listing;
-	return { id, account, created, updated, subject, startDateTime, endDateTime, registered, registerDate, markedCompletedStudent, markedCompletedTutor, deleted, deleteDate };
-}
+async function sendTutorListingFilledEmail(origin, listing) {
+	const tutorAccount = await db.Account.findById(listing.account);
+	const studentAccount = await db.Account.findById(listing.registered);
 
-async function sendListingConfirmationEmail(email, origin, id) {
-	let message;
-	if (origin) {
-		message = `<p>View the listing page <a href="${origin}/tutor/listings/${id}">here</a>.</p>`
-	}
-	
 	await sendEmail({
-		to: email,
-		subject: 'Engage Network - Listing Created',
-		html: `<h4>Listing Created</h4>
-		${message}`
+		to: tutorAccount.email,
+		subject: 'Engage Network - Listing Filled',
+		html: `
+		<p>Hello ${tutorAccount.firstName} ${tutorAccount.lastName},</p>
+		<p>You are receiving this email as a notification that ${studentAccount.firstName} ${studentAccount.lastName} has registered for your tutoring session from ${listing.startDateTime} to ${listing.endDateTime}. You can view the details <a href="${origin}/tutor/listings/details/${listing._id}">here</a>. Thank you for volunteering your time with us and helping us to achieve our vision of unrestricted education enrichment.</p>
+		<p>Your student should contact you using the private message system at least 1 hour before your lesson. Use this information to structure your lesson as you see fit. If this is your first lesson, we recommend that you take a look at the tutor resource package before you begin.</p>
+		<p>Remember, we cannot make a community of learners and tutors without you. If you know anyone who might be interested in joining the Engage Network, we kindly ask that you spread the word about us so we can continue to deliver on our promise of free, unrestrictive extracurricular education.</p>
+		<p>Thank you and have a great lesson,</p>
+		<p>Engage Network Team</p>
+		<br>
+		<p>[Automated] Please do not respond to this email as it is not monitored. Questions, comments, or concerns may be directed to <a href="mailto:support@engageapp.net">support@engageapp.net</a>.</p>
+		`
 	})
 }
 
-async function sendSessionConfirmationEmail(email, origin, id) {
-	let message;
-	if (origin) {
-		message = `<p>View the session details <a href="${origin}/student/sessions/${id}">here</a>.</p>`
-	}
+async function sendStudentSessionRegistrationEmail(origin, session) {
+	const tutorAccount = await db.Account.findById(session.account);
+	const studentAccount = await db.Account.findById(session.registered);
 	
 	await sendEmail({
-		to: email,
-		subject: 'Engage Network - Registered for Session',
-		html: `<h4>Registered for Session</h4>
-		${message}`
+		to: studentAccount.email,
+		subject: 'Engage Network - Session Registration Confirmation',
+		html: `
+		<p>Hello ${studentAccount.firstName} ${studentAccount.lastName},</p>
+		<p>Thank you for signing up for a session with the Engage Network, and we look forward to providing you with our promise of unrestricted education enrichment. You are receiving this email as a reminder that you recently registered for a tutoring session from ${session.startDateTime} to ${session.endDateTime} with ${tutorAccount.firstName} ${tutorAccount.lastName}. You can view the details <a href="${origin}/student/sessions/registered/details/${session._id}">here</a>.</p>
+		<p>Please contact your tutor, if you have not done so already, using the private message system, and give a brief overview of what you want your tutor to cover for this particular session at least 1 hour before your lesson.</p>
+		<p>Remember, we cannot make a community of learners without you. If you know anyone who might be interested in joining the Engage Network, we kindly ask that you spread the word about us so we can continue to deliver on our promise of free, unrestrictive extracurricular education.</p>
+		<p>Thank you and enjoy your lesson,</p>
+		<p>Engage Network Team</p>
+		<br>
+		<p>[Automated] Please do not respond to this email as it is not monitored. Questions, comments, or concerns may be directed to <a href="mailto:support@engageapp.net">support@engageapp.net</a>.</p>
+		`
 	})
 }

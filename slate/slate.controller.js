@@ -49,7 +49,7 @@ function createListing(req, res, next) {
 function register(req, res, next) {
 	const account = req.user.id;
 	
-	slateService.register(account, req.params.id)
+	slateService.register(account, req.params.id, req.get('origin'))
 	.then(() => res.json({ message: 'Successfully registered for tutor' }))
 	.catch(next);
 }

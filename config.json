@@ -6,8 +6,8 @@
         "host": "smtp.ethereal.email",
         "port": 587,
         "auth": {
-            "user": "elwyn.miller@ethereal.email",
-            "pass": "Z8qNvH4PaJWejJXzx1"
+            "user": "kali.moen@ethereal.email",
+            "pass": "bR6wtQGyQjfXJax2RW"
         }
     }
 }
