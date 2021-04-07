@@ -7,6 +7,7 @@ const schema = new Schema({
 	firstName: { type: String, required: true },
 	lastName: { type: String, required: true },
 	role: { type: String, required: true },
+	approved: Date,
 	behaviourRating: Number,
 	contentRatings: {
 		overallContentRating: Number,
@@ -22,9 +23,9 @@ const schema = new Schema({
 		token: String,
 		expires: Date
 	},
-	passwordReset: Date,
-	created: Date,
-	updated: Date
+	passwordReset: Date
+}, {
+	timestamps: true
 });
 
 schema.virtual('isVerified').get(function() {

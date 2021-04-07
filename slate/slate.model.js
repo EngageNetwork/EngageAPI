@@ -3,8 +3,6 @@ const Schema = mongoose.Schema;
 
 const schema = new Schema({
 	account: { type: Schema.Types.ObjectId, ref: 'Account' },
-	created: Date,
-	updated: Date,
 	subject: String,
 	startDateTime: Date,
 	endDateTime: Date,
@@ -17,6 +15,8 @@ const schema = new Schema({
 	studentBehaviourRatingByTutor: Number,
 	deleted: Boolean,
 	deleteDate: Date
+}, {
+	timestamps: true
 });
 
 module.exports = mongoose.model('Slate', schema)

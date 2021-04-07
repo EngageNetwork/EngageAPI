@@ -26,10 +26,6 @@ async function createListing(params) {
 	// Create listing object
 	const listing = new db.Slate(params);
 	
-	// Set Time for Creation and Update to Now
-	listing.created = Date.now();
-	listing.updated = Date.now();
-	
 	// Save listing to database
 	await listing.save();
 }
@@ -299,7 +295,6 @@ async function update(account, id, params) {
 	
 	// Copy details to listing and save
 	Object.assign(listing, params);
-	listing.updated = Date.now();
 	await listing.save();
 	
 	return basicListingDetails(listing);
@@ -415,8 +410,8 @@ async function getSession(id) {
 }
 
 function basicListingDetails(listing) {
-	const { id, account, created, subject, startDateTime, endDateTime, registered, markedCompletedStudent, markedCompletedTutor } = listing;
-	return { id, account, created, subject, startDateTime, endDateTime, registered, markedCompletedStudent, markedCompletedTutor };
+	const { id, account, createdAt, updatedAt, subject, startDateTime, endDateTime, registered, markedCompletedStudent, markedCompletedTutor } = listing;
+	return { id, account, createdAt, updatedAt, subject, startDateTime, endDateTime, registered, markedCompletedStudent, markedCompletedTutor };
 }
 
 async function sendTutorListingFilledEmail(origin, listing) {
