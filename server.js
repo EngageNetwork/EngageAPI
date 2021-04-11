@@ -1,10 +1,14 @@
-﻿// Required Modules and Components
+﻿// IMPORTANT
+require('dotenv').config();
+
+// Required Modules and Components
 require('rootpath')();
 const express = require('express');
 const app = express();
 const cors = require('cors');
 const http = require('http').Server(app);
 global.io = require('socket.io')(http);
+const twilio = require('twilio');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const errorHandler = require('_middleware/error-handler');

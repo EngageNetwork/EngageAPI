@@ -1,5 +1,4 @@
-﻿const config = require('config.json');
-const jwt = require('jsonwebtoken');
+﻿const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const crypto = require("crypto");
 const sendEmail = require('_helpers/send-email');
@@ -316,7 +315,7 @@ function hash(password) {
 
 function generateJwtToken(account) {
 	// Create JWT with account id that expires after 15 minutes
-	return jwt.sign({ sub: account.id, id: account.id }, config.secret, { expiresIn: '15m' });
+	return jwt.sign({ sub: account.id, id: account.id }, process.env.AUTH_SECRET, { expiresIn: '15m' });
 }
 
 function generateRefreshToken(account, ipAddress) {
