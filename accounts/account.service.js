@@ -20,6 +20,8 @@ module.exports = {
 	getByIdPublic,
 	create,
 	update,
+	updateTranscript,
+	approveTutor,
 	delete: _delete
 };
 
@@ -218,6 +220,76 @@ async function update(id, params) {
 	return accountDetails(account);
 }
 
+async function updateTranscript(id, params) {
+	const account = await getAccount(id);
+
+	// Approve account if not already approved
+	if (!account.approved) {
+		account.approved = Date.now();
+	}
+
+	// Copy details to account and save
+	Object.assign(account.transcript, params);
+	await account.save();
+
+	return accountDetails(account);
+}
+
+async function approveTutor(id, subject) {
+	const account = await getAccount(id);
+
+	// Approve account if not already approved
+	if (!account.approved) {
+		account.approved = Date.now();
+	}
+
+	switch(subject) {
+		case 'Math':
+			if (!!account.approvedSubjects.math) {
+				account.approvedSubjects.math = undefined;
+			}
+			else if (!account.approvedSubjects.math) {
+				account.approvedSubjects.math = true;
+			}
+			break;
+		case 'Science':
+			if (!!account.approvedSubjects.science) {
+				account.approvedSubjects.science = undefined;
+			}
+			else if (!account.approvedSubjects.science) {
+				account.approvedSubjects.science = true;
+			}
+			break;
+		case 'Social Studies':
+			if (!!account.approvedSubjects.socialStudies) {
+				account.approvedSubjects.socialStudies = undefined;
+			}
+			else if (!account.approvedSubjects.socialStudies) {
+				account.approvedSubjects.socialStudies = true;
+			}
+			break;
+		case 'Language Arts':
+			if (!!account.approvedSubjects.languageArts) {
+				account.approvedSubjects.languageArts = undefined;
+			}
+			else if (!account.approvedSubjects.languageArts) {
+				account.approvedSubjects.languageArts = true;
+			}
+			break;
+		case 'Foreign Language Acquisition':
+			if (!!account.approvedSubjects.foreignLanguageAcquisition) {
+				account.approvedSubjects.foreignLanguageAcquisition = undefined;
+			}
+			else if (!account.approvedSubjects.foreignLanguageAcquisition) {
+				account.approvedSubjects.foreignLanguageAcquisition = true;
+			}
+			break;
+	}
+
+	await account.save();
+	return account;
+}
+
 async function _delete(id) {
 	const account = await getAccount(id);
 	await account.remove();
@@ -262,8 +334,8 @@ function randomTokenString() {
 }
 
 function accountDetails(account) {
-	const { id, firstName, lastName, email, role, approved, behaviourRating, overallContentRating, mathContentRating, scienceContentRating, socialStudiesContentRating, languageArtsContentRating, ForeignLanguageAcquisitionContentRating, createdAt, updatedAt, isVerified } = account;
-	return { id, firstName, lastName, email, role, approved, behaviourRating, overallContentRating, mathContentRating, scienceContentRating, socialStudiesContentRating, languageArtsContentRating, ForeignLanguageAcquisitionContentRating, createdAt, updatedAt, isVerified };
+	const { id, firstName, lastName, email, role, approved, approvedSubjects, transcript, behaviourRating, contentRatings, createdAt, updatedAt, isVerified, verified } = account;
+	return { id, firstName, lastName, email, role, approved, approvedSubjects, transcript, behaviourRating, contentRatings, createdAt, updatedAt, isVerified, verified };
 }
 
 function publicDetails(account) {

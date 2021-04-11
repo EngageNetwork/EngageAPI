@@ -8,6 +8,20 @@ const schema = new Schema({
 	lastName: { type: String, required: true },
 	role: { type: String, required: true },
 	approved: Date,
+	approvedSubjects: {
+		math: Boolean,
+		science: Boolean,
+		socialStudies: Boolean,
+		languageArts: Boolean,
+		foreignLanguageAcquisition: Boolean
+	},
+	transcript: {
+		math: String,
+		science: String,
+		socialStudies: String,
+		languageArts: String,
+		foreignLanguageAcquisition: String
+	},
 	behaviourRating: Number,
 	contentRatings: {
 		overallContentRating: Number,
