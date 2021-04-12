@@ -28,7 +28,7 @@ app.use('/slate', require('./slate/slate.controller'));
 app.use('/message', require('./message/message.controller'));
 
 // Swagger API Documentation Routes
-app.use('/api-docs', require('_helpers/swagger'));
+// app.use('/api-docs', require('_helpers/swagger'));
 
 // Global Backend Error Handler
 app.use(errorHandler);
