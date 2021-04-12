@@ -5,7 +5,7 @@ const readReceiptSchema = new Schema({
 	_id: false,
 	readByUserId: { type: Schema.Types.ObjectId, ref: 'ReadByUserId' },
 	readAt: { type: Date, default: Date.now() }
-})
+});
 
 const schema = new Schema({
 	chatId: { type: Schema.Types.ObjectId, ref: 'ChatId' },

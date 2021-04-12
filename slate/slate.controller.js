@@ -5,8 +5,10 @@ const validateRequest = require('_middleware/validate-request');
 const authorize = require('_middleware/authorize')
 const Role = require('_helpers/role');
 const slateService = require('./slate.service');
+const videoConferenceService = require('./videoconference.service');
 
 // Routes
+// Main Slate API Routes
 router.post('/create', authorize([Role.Admin, Role.Tutor]), createListingSchema, createListing);
 router.post('/register/:id', authorize([Role.Admin, Role.Student]), register);
 router.post('/cancel/:id', authorize([Role.Admin, Role.Student]), cancel);
@@ -23,9 +25,14 @@ router.put('/rating/content/:id', authorize([Role.Admin, Role.Student]), submitC
 router.put('/rating/behaviour/:id', authorize([Role.Admin, Role.Tutor, Role.Student]), submitBehaviourRatingSchema, submitBehaviourRating);
 router.delete('/delete/:id', authorize([Role.Admin, Role.Tutor]), _delete);
 
+// Video Conferencing API Routes
+router.post('/initiate-video/:id', authorize(), initiateVideoChat);
+router.get('/video-token/:id', authorize(), getVideoToken);
+
 module.exports = router;
 
 // API Functions
+// Main Slate API
 function createListingSchema(req, res, next) {
 	const schema = Joi.object({
 		subject: Joi.string().required(),
@@ -183,5 +190,25 @@ function _delete(req, res, next) {
 
 	slateService.delete(account, req.params.id)
 	.then(() => res.json({ message: 'Listing removed successfully' }))
+	.catch(next);
+}
+
+// Video Conferencing API
+// API Functions
+function initiateVideoChat(req, res, next) {
+	const account = req.user;
+    const sessionId = req.params.id;
+
+	videoConferenceService.initiateVideoChat(account, sessionId)
+	.then(videoChat => res.status(200).json(videoChat))
+	.catch(next);
+}
+
+function getVideoToken(req, res, next) {
+	const accountId = req.user.idl
+	const sessionId = req.params.id;
+
+	videoConferenceService.getToken(accountId, sessionId)
+	.then(accessDetails => res.status(200).json(accessDetails))
 	.catch(next);
 }

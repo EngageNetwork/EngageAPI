@@ -1,4 +1,5 @@
-const backgroundTasks = require('../_utils/backgroundTasks');
+const backgroundTasks = require('_utils/backgroundTasks.js');
+const videoConferenceService = require('./videoconference.service');
 const sendEmail = require('_helpers/send-email');
 const db = require('_helpers/db');
 const mongoose = require('mongoose');
@@ -332,6 +333,11 @@ async function markComplete(account, id) {
 			session.markedCompletedStudent = undefined;
 			await session.save();
 		}
+	}
+
+	// If both have marked as complete, close video conference room is not already closed
+	if (!!session.markedCompletedTutor && !!session.markedCompletedStudent) {
+		videoConferenceService.closeVideoChat(id);
 	}
 }
 
