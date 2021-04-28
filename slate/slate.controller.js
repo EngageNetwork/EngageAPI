@@ -26,8 +26,8 @@ router.put('/rating/behaviour/:id', authorize([Role.Admin, Role.Tutor, Role.Stud
 router.delete('/delete/:id', authorize([Role.Admin, Role.Tutor]), _delete);
 
 // Video Conferencing API Routes
-router.post('/initiate-video/:id', authorize(), initiateVideoChat);
-router.get('/video-token/:id', authorize(), getVideoToken);
+router.post('/video/initiate/:id', authorize(), initiateVideoChat);
+router.get('/video/token/:id', authorize(), getVideoToken);
 
 module.exports = router;
 
@@ -36,6 +36,7 @@ module.exports = router;
 function createListingSchema(req, res, next) {
 	const schema = Joi.object({
 		subject: Joi.string().required(),
+		details: Joi.string(),
 		startDateTime: Joi.string().required(),
 		endDateTime: Joi.string().required()
 	});
@@ -45,10 +46,11 @@ function createListingSchema(req, res, next) {
 function createListing(req, res, next) {
 	const account = req.user.id;
 	const subject = req.body.subject;
+	const details = req.body.details;
 	const startDateTime = new Date(req.body.startDateTime).toISOString();
 	const endDateTime = new Date(req.body.endDateTime).toISOString();
 	
-	slateService.createListing({ account, subject, startDateTime, endDateTime })
+	slateService.createListing({ account, subject, details, startDateTime, endDateTime })
 	.then(() => res.json({ message: 'Listing created successfully' }))
 	.catch(next);
 }

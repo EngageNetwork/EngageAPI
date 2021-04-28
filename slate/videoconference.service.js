@@ -21,9 +21,16 @@ async function initiateVideoChat(account, sessionId) {
 	// Verify user is part of session
 	if (session.account.toString() !== account.id && session.registered.toString() !== account.id) throw 'Unauthorized';
 
-	// If room already exists, return existing room details
+	// If entry already exists in db for room, get most up-to-date details and overwrite existing db entry
 	if (!!session.videoConferenceRoom) {
-		return session;
+		const roomDetails = await twilioClient.video.rooms(session.videoConferenceRoom.sid).fetch();
+		const { sid, status, dateCreated, dateUpdated, url, links } = roomDetails;
+		session.videoConferenceRoom = { sid, status, dateCreated, dateUpdated, url, links }
+		
+		// Check if session is in-progress, otherwise, generate new room
+		if (session.videoConferenceRoom.status == 'in-progress') {
+			return session;
+		}
 	}
 
 	// Call the Twilio video API to create the new room.

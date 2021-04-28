@@ -19,6 +19,7 @@ const videoConferenceRoomSchema = new Schema({
 const schema = new Schema({
 	account: { type: Schema.Types.ObjectId, ref: 'Account' },
 	subject: String,
+	details: String,
 	startDateTime: Date,
 	endDateTime: Date,
 	registered: { type: Schema.Types.ObjectId, ref: 'Registered' },
