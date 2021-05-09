@@ -26,14 +26,14 @@ async function initiateVideoChat(account, sessionId) {
 		const roomDetails = await twilioClient.video.rooms(session.videoConferenceRoom.sid).fetch();
 		const { sid, status, dateCreated, dateUpdated, url, links } = roomDetails;
 		session.videoConferenceRoom = { sid, status, dateCreated, dateUpdated, url, links }
-		
+
 		// Check if session is in-progress, otherwise, generate new room
 		if (session.videoConferenceRoom.status == 'in-progress') {
 			return session;
 		}
 	}
 
-	// Call the Twilio video API to create the new room.
+	// Call the Twilio video API to create the new room
 	const room = await twilioClient.video.rooms.create({
 		type: 'go'
 	});
@@ -58,7 +58,6 @@ async function closeVideoChat(sessionId) {
 
 	// Set status of room to 'completed'
 	const room = await twilioClient.video.rooms(roomDetails.sid).update({ status: 'completed' });
-	console.log(room);
 
 	// Update entry in db
 	session.videoConferenceRoom.status = room.status

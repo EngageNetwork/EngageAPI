@@ -207,7 +207,7 @@ function initiateVideoChat(req, res, next) {
 }
 
 function getVideoToken(req, res, next) {
-	const accountId = req.user.idl
+	const accountId = req.user.id;
 	const sessionId = req.params.id;
 
 	videoConferenceService.getToken(accountId, sessionId)
