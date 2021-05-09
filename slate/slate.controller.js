@@ -125,6 +125,7 @@ function getSessionById(req, res, next) {
 function updateSchema(req, res, next) {
 	const schema = Joi.object({
 		subject: Joi.string().required(),
+		details: Joi.string(),
 		startDateTime: Joi.string().required(),
 		endDateTime: Joi.string().required()
 	});
@@ -136,10 +137,11 @@ function update(req, res, next) {
 	const account = req.user;
 	const id = req.params.id;
 	const subject = req.body.subject;
+	const details = req.body.details;
 	const startDateTime = new Date(req.body.startDateTime).toISOString();
 	const endDateTime = new Date(req.body.endDateTime).toISOString();
 	
-	slateService.update(account, id, { subject, startDateTime, endDateTime })
+	slateService.update(account, id, { subject, details, startDateTime, endDateTime })
 	.then(listing => res.json(listing))
 	.catch(next);
 }
