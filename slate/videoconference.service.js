@@ -21,14 +21,14 @@ async function initiateVideoChat(account, sessionId) {
 	// Verify user is part of session
 	if (session.account.toString() !== account.id && session.registered.toString() !== account.id) throw 'Unauthorized';
 
-	// If entry already exists in db for room, get most up-to-date details and overwrite existing db entry
-	if (!!session.videoConferenceRoom) {
-		const roomDetails = await twilioClient.video.rooms(session.videoConferenceRoom.sid).fetch();
-		const { sid, status, dateCreated, dateUpdated, url, links } = roomDetails;
-		session.videoConferenceRoom = { sid, status, dateCreated, dateUpdated, url, links }
+	// If entry already exists in db for latest room, get most up-to-date details and overwrite outdated details
+	if (!!session.latestVideoConferenceRoom) {
+		const roomDetails = await twilioClient.video.rooms(session.latestVideoConferenceRoom.sid).fetch();
+		const { sid, status, dateCreated, dateUpdated, duration, url, links } = roomDetails;
+		session.latestVideoConferenceRoom = { sid, status, dateCreated, dateUpdated, duration, url, links } // Only the latest room details need to be up to date, since the older entries are purely to keep a log
 
 		// Check if session is in-progress, otherwise, generate new room
-		if (session.videoConferenceRoom.status == 'in-progress') {
+		if (session.latestVideoConferenceRoom.status == 'in-progress') {
 			return session;
 		}
 	}
@@ -39,8 +39,13 @@ async function initiateVideoChat(account, sessionId) {
 	});
 
 	// Save video conference room details to session
-	const { sid, status, dateCreated, dateUpdated, url, links } = room;
-	session.videoConferenceRoom = { sid, status, dateCreated, dateUpdated, url, links }
+	const { sid, status, dateCreated, dateUpdated, duration, url, links } = room;
+	const newRoomDetails = { sid, status, dateCreated, dateUpdated, duration, url, links };
+
+	session.latestVideoConferenceRoom = newRoomDetails;
+	
+	//// ADD LOGIC TO SAVE PAST ROOMS HERE ////
+
 	await session.save();
 
 	// Return session details (including vc room details)
@@ -54,13 +59,13 @@ async function closeVideoChat(sessionId) {
 	if (!session) throw 'Session not found';
 
 	// Get room details
-	const roomDetails = session.videoConferenceRoom;
+	const roomDetails = session.latestVideoConferenceRoom;
 
 	// Set status of room to 'completed'
 	const room = await twilioClient.video.rooms(roomDetails.sid).update({ status: 'completed' });
 
 	// Update entry in db
-	session.videoConferenceRoom.status = room.status
+	session.latestVideoConferenceRoom.status = room.status;
 	await session.save();
 
 	// Return session details (including updated vc room details)
@@ -74,7 +79,7 @@ async function getToken(accountId, sessionId) {
 	if (!session) throw 'Session not found';
 
 	// Get room details
-	const roomDetails = session.videoConferenceRoom;
+	const roomDetails = session.latestVideoConferenceRoom;
 
 	// Create access token
 	const token = new TwilioAccessToken(

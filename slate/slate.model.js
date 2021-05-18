@@ -26,12 +26,14 @@ const schema = new Schema({
 	registerDate: Date,
 	markedCompletedTutor: Boolean,
 	markedCompletedStudent: Boolean,
+	sessionDuration: Number,
 	tutorContentRatingByStudent: Number,
 	tutorBehaviourRatingByStudent: Number,
 	studentBehaviourRatingByTutor: Number,
 	deleted: Boolean,
 	deleteDate: Date,
-	videoConferenceRoom: videoConferenceRoomSchema
+	latestVideoConferenceRoom: videoConferenceRoomSchema,
+	videoConferenceRooms: [videoConferenceRoomSchema]
 }, {
 	timestamps: true
 });
