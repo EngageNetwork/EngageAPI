@@ -18,6 +18,7 @@ module.exports = {
 	getMyFinishedListings,
 	getListingById,
 	getMySessions,
+	getMyFinishedSessions,
 	getSessionById,
 	update,
 	markComplete,
@@ -270,6 +271,36 @@ async function getMySessions(account) {
 	const aggregate = await db.Slate.aggregate([
 		{ $match: { registered: { $eq: account } } },
 		{ $match: { deleted: { $ne: true } } },
+		{ $match: { complete: { $eq: false } } },
+		{ $sort: { startDateTime:  1 } },
+		// Run lookup on Accounts collection and retrieve user info for account (tutor)
+		{
+			$lookup: {
+				from: 'accounts',
+				// Filter out unnecessary data fields
+				let: { account: '$account' },
+				pipeline: [
+					{ $match: { $expr: { $eq: ['$_id', '$$account'] } } },
+					{ $project: { _id: 1, firstName: 1, lastName: 1, role: 1, contentRatings: 1, behaviourRating: 1 } }
+				],
+				as: 'accountDetails'
+			}
+		},
+		{ $unwind: {
+			'path': '$accountDetails',
+			'preserveNullAndEmptyArrays': true
+		} }
+	]);
+	return aggregate;
+}
+
+async function getMyFinishedSessions(account) {
+	var account = mongoose.Types.ObjectId(account);
+
+	const aggregate = await db.Slate.aggregate([
+		{ $match: { registered: { $eq: account } } },
+		{ $match: { deleted: { $ne: true } } },
+		{ $match: { complete: { $eq: true } } },
 		{ $sort: { startDateTime:  1 } },
 		// Run lookup on Accounts collection and retrieve user info for account (tutor)
 		{
@@ -372,10 +403,6 @@ async function markComplete(account, id) {
 
 	// If both have marked as complete
 	if (!!session.markedCompletedTutor && !!session.markedCompletedStudent) {
-		// Mark session as complete
-		session.complete = true;
-		await session.save(); // Since this is relatively critical, run save once immediately to ensure nothing interupts
-
 		// Update details of the latest room
 		const latestRoomDetails = await twilioClient.video.rooms(session.latestVideoConferenceRoom.sid).fetch();
 		const { sid, status, dateCreated, dateUpdated, duration, url, links } = latestRoomDetails;
@@ -389,6 +416,9 @@ async function markComplete(account, id) {
 		// Save the duration of the call !!!!(May require update to include duration of historical calls)
 		session.sessionDuration = duration;
 		await session.save();
+
+		// Recalculate tutor hours
+		backgroundTasks.recalculateTSeconds(account.id);
 	}
 }
 
@@ -407,6 +437,9 @@ async function submitContentRating(account, id, contentRating) {
 
 	// Recalculate Overall Rating
 	await backgroundTasks.recalculateOverallTContentRating(id);
+
+	// Check whether all ratings have been submitted
+	await backgroundTasks.recheckSessionComplete(id);
 }
 
 async function submitBehaviourRating(account, id, behaviourRating) {
@@ -424,6 +457,9 @@ async function submitBehaviourRating(account, id, behaviourRating) {
 
 		// Recalculate Behaviour Rating
 		await backgroundTasks.recalculateSBehaviourRating(id);
+
+		// Check whether all ratings have been submitted
+		await backgroundTasks.recheckSessionComplete(id);
 	}
 	// From Student
 	if (session.registered.toString() === account.id) {
@@ -433,6 +469,9 @@ async function submitBehaviourRating(account, id, behaviourRating) {
 
 		// Recalculate Behaviour Rating
 		await backgroundTasks.recalculateTBehaviourRating(id);
+
+		// Check whether all ratings have been submitted
+		await backgroundTasks.recheckSessionComplete(id);
 	}
 }
 

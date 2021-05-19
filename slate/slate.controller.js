@@ -19,6 +19,7 @@ router.get('/mylistings', authorize([Role.Admin, Role.Tutor]), getMyListings);
 router.get('/myfinishedlistings', authorize([Role.Admin, Role.Tutor]), getMyFinishedListings);
 router.get('/listing/:id', authorize([Role.Admin, Role.Tutor]), getListingById);
 router.get('/mysessions', authorize([Role.Admin, Role.Student]), getMySessions);
+router.get('/myfinishedsessions', authorize([Role.Admin, Role.Student]), getMyFinishedSessions);
 router.get('/session/:id', authorize([Role.Admin, Role.Student]), getSessionById);
 router.put('/update/:id', authorize([Role.Admin, Role.Tutor]), updateSchema, update);
 router.put('/markcomplete/:id', authorize([Role.Admin, Role.Tutor, Role.Student]), markComplete);
@@ -119,6 +120,14 @@ function getMySessions(req, res, next) {
 	const account = req.user.id;
 	
 	slateService.getMySessions(account)
+	.then(sessions => res.json(sessions))
+	.catch(next);
+}
+
+function getMyFinishedSessions(req, res, next) {
+	const account = req.user.id;
+	
+	slateService.getMyFinishedSessions(account)
 	.then(sessions => res.json(sessions))
 	.catch(next);
 }

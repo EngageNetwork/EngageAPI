@@ -2,15 +2,44 @@ const db = require('_helpers/db');
 const mongoose = require('mongoose');
 
 module.exports = {
-	recalculateTHours,
+	recheckSessionComplete,
+	recalculateTSeconds,
 	recalculateOverallTContentRating,
     recalculateTContentRating,
     recalculateTBehaviourRating,
     recalculateSBehaviourRating
 }
 
-async function recalculateTHours(id) {
+async function recheckSessionComplete(id) {
+	const session = await getSession(id);
 	
+	if (!!session.studentBehaviourRatingByTutor) {
+		if (!!session.tutorBehaviourRatingByStudent) {
+			if (!!session.tutorContentRatingByStudent) {
+				// Mark session as complete
+				session.complete = true;
+				await session.save();
+			}
+		}
+	}
+}
+
+async function recalculateTSeconds(id) {
+	const account = await db.Account.findById(id);
+
+	const slates = await db.Slate.find({
+		account: { $eq: id },
+		sessionDuration: { $exists: true }
+	});
+	
+	var totalSeconds = 0;
+
+	slates.forEach(function (item) {
+		totalSeconds += item.sessionDuration;
+	})
+
+	account.totalDuration = totalSeconds;
+	await account.save();
 }
 
 async function recalculateOverallTContentRating(id) {

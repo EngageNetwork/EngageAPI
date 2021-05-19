@@ -31,6 +31,7 @@ const schema = new Schema({
 		languageArtsContentRating: Number,
 		foreignLanguageAcquisitionContentRating: Number
 	},
+	totalDuration: Number,
 	verificationToken: String,
 	verified: Date,
 	resetToken: {
