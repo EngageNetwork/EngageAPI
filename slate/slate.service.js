@@ -271,7 +271,7 @@ async function getMySessions(account) {
 	const aggregate = await db.Slate.aggregate([
 		{ $match: { registered: { $eq: account } } },
 		{ $match: { deleted: { $ne: true } } },
-		{ $match: { complete: { $eq: false } } },
+		{ $match: { complete: {$ne: true } } },
 		{ $sort: { startDateTime:  1 } },
 		// Run lookup on Accounts collection and retrieve user info for account (tutor)
 		{
