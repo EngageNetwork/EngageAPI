@@ -182,7 +182,7 @@ async function getMyListings(account) {
 		{ $match: { account: { $eq: account } } },
 		{ $match: { deleted: { $ne: true } } },
 		{ $match: { complete: { $ne: true } } },
-		{ $sort: { registered: -1 } },
+		{ $sort: { registered: -1, startDateTime: 1 } },
 		// Run lookup on Accounts collection and retrieve user info for registered (student)
 		{
 			$lookup: {
@@ -211,7 +211,7 @@ async function getMyFinishedListings(account) {
 		{ $match: { account: { $eq: account } } },
 		{ $match: { deleted: { $ne: true } } },
 		{ $match: { complete: { $eq: true } } },
-		{ $sort: { registered: -1 } },
+		{ $sort: { registered: -1, startDateTime: 1 } },
 		// Run lookup on Accounts collection and retrieve user info for registered (student)
 		{
 			$lookup: {
