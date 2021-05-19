@@ -1,5 +1,4 @@
-﻿const config = require('config.json');
-const jwt = require('jsonwebtoken');
+﻿const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const crypto = require("crypto");
 const sendEmail = require('_helpers/send-email');
@@ -20,6 +19,8 @@ module.exports = {
 	getByIdPublic,
 	create,
 	update,
+	updateTranscript,
+	approveTutor,
 	delete: _delete
 };
 
@@ -34,16 +35,16 @@ async function authenticate({ email, password, ipAddress }) {
 		throw 'Account unverified - Please verify your email, then try again'
 	}
 	
-	// authentication successful so generate jwt and refresh tokens
+	// Generate JWT and refresh token
 	const jwtToken = generateJwtToken(account);
 	const refreshToken = generateRefreshToken(account, ipAddress);
 	
-	// save refresh token
+	// Save refresh token
 	await refreshToken.save();
 	
-	// return basic details and tokens
+	// Return account details + auth token
 	return {
-		...basicDetails(account),
+		...accountDetails(account),
 		jwtToken,
 		refreshToken: refreshToken.token
 	};
@@ -53,7 +54,7 @@ async function refreshToken({ token, ipAddress }) {
 	const refreshToken = await getRefreshToken(token);
 	const { account } = refreshToken;
 	
-	// replace old refresh token with a new one and save
+	// Replace old refresh token with new refresh token
 	const newRefreshToken = generateRefreshToken(account, ipAddress);
 	refreshToken.revoked = Date.now();
 	refreshToken.revokedByIp = ipAddress;
@@ -61,12 +62,12 @@ async function refreshToken({ token, ipAddress }) {
 	await refreshToken.save();
 	await newRefreshToken.save();
 	
-	// generate new jwt
+	// Generate new JWT
 	const jwtToken = generateJwtToken(account);
 	
-	// return basic details and tokens
+	// Return account details + auth token
 	return {
-		...basicDetails(account),
+		...accountDetails(account),
 		jwtToken,
 		refreshToken: newRefreshToken.token
 	};
@@ -94,9 +95,6 @@ async function register(params, origin) {
 	// Create account object
 	const account = new db.Account(params);
 	
-	// Set Account Creation Date
-	account.created = Date.now();
-	
 	// Generate random token for verification token
 	account.verificationToken = randomTokenString();
 	
@@ -123,17 +121,17 @@ async function verifyEmail({ token }) {
 async function forgotPassword({ email }, origin) {
 	const account = await db.Account.findOne({ email });
 	
-	// always return ok response to prevent email enumeration
+	// Verify account with specified email exists
 	if (!account) return;
 	
-	// create reset token that expires after 1 hour
+	// Create password reset token valid for 1 hour
 	account.resetToken = {
 		token: randomTokenString(),
 		expires: new Date(Date.now() + 1*60*60*1000)
 	};
 	await account.save();
 	
-	// send email
+	// Send Email
 	await sendPasswordResetEmail(account, origin);
 }
 
@@ -154,7 +152,7 @@ async function resetPassword({ token, password }) {
 	
 	if (!account) throw 'Invalid token';
 	
-	// update password and remove reset token
+	// Update password hash in db and delete reset token
 	account.passwordHash = hash(password);
 	account.passwordReset = Date.now();
 	account.resetToken = undefined;
@@ -163,7 +161,7 @@ async function resetPassword({ token, password }) {
 
 async function getAll() {
 	const accounts = await db.Account.find();
-	return accounts.map(x => basicDetails(x));
+	return accounts.map(x => accountDetails(x));
 }
 
 async function getUsersByIds(ids) {
@@ -173,7 +171,7 @@ async function getUsersByIds(ids) {
 
 async function getById(id) {
 	const account = await getAccount(id);
-	return basicDetails(account);
+	return accountDetails(account);
 }
 
 async function getByIdPublic(id) {
@@ -189,17 +187,16 @@ async function create(params) {
 	
 	const account = new db.Account(params);
 	
-	// Set Account Creation Date
-	account.created = Date.now();
+	// Set Account Verification Date
 	account.verified = Date.now();
 	
-	// hash password
+	// Generate password hash
 	account.passwordHash = hash(params.password);
 	
-	// save account
+	// Save account to db
 	await account.save();
 	
-	return basicDetails(account);
+	return accountDetails(account);
 }
 
 async function update(id, params) {
@@ -217,10 +214,79 @@ async function update(id, params) {
 	
 	// Copy details to account and save
 	Object.assign(account, params);
-	account.updated = Date.now();
 	await account.save();
 	
-	return basicDetails(account);
+	return accountDetails(account);
+}
+
+async function updateTranscript(id, params) {
+	const account = await getAccount(id);
+
+	// Approve account if not already approved
+	if (!account.approved) {
+		account.approved = Date.now();
+	}
+
+	// Copy details to account and save
+	Object.assign(account.transcript, params);
+	await account.save();
+
+	return accountDetails(account);
+}
+
+async function approveTutor(id, subject) {
+	const account = await getAccount(id);
+
+	// Approve account if not already approved
+	if (!account.approved) {
+		account.approved = Date.now();
+	}
+
+	switch(subject) {
+		case 'Math':
+			if (!!account.approvedSubjects.math) {
+				account.approvedSubjects.math = undefined;
+			}
+			else if (!account.approvedSubjects.math) {
+				account.approvedSubjects.math = true;
+			}
+			break;
+		case 'Science':
+			if (!!account.approvedSubjects.science) {
+				account.approvedSubjects.science = undefined;
+			}
+			else if (!account.approvedSubjects.science) {
+				account.approvedSubjects.science = true;
+			}
+			break;
+		case 'Social Studies':
+			if (!!account.approvedSubjects.socialStudies) {
+				account.approvedSubjects.socialStudies = undefined;
+			}
+			else if (!account.approvedSubjects.socialStudies) {
+				account.approvedSubjects.socialStudies = true;
+			}
+			break;
+		case 'Language Arts':
+			if (!!account.approvedSubjects.languageArts) {
+				account.approvedSubjects.languageArts = undefined;
+			}
+			else if (!account.approvedSubjects.languageArts) {
+				account.approvedSubjects.languageArts = true;
+			}
+			break;
+		case 'Foreign Language Acquisition':
+			if (!!account.approvedSubjects.foreignLanguageAcquisition) {
+				account.approvedSubjects.foreignLanguageAcquisition = undefined;
+			}
+			else if (!account.approvedSubjects.foreignLanguageAcquisition) {
+				account.approvedSubjects.foreignLanguageAcquisition = true;
+			}
+			break;
+	}
+
+	await account.save();
+	return account;
 }
 
 async function _delete(id) {
@@ -248,12 +314,12 @@ function hash(password) {
 }
 
 function generateJwtToken(account) {
-	// create a jwt token containing the account id that expires in 15 minutes
-	return jwt.sign({ sub: account.id, id: account.id }, config.secret, { expiresIn: '15m' });
+	// Create JWT with account id that expires after 15 minutes
+	return jwt.sign({ sub: account.id, id: account.id }, process.env.AUTH_SECRET, { expiresIn: '15m' });
 }
 
 function generateRefreshToken(account, ipAddress) {
-	// create a refresh token that expires in 7 days
+	// Create refresh token that expires after 7 days
 	return new db.RefreshToken({
 		account: account.id,
 		token: randomTokenString(),
@@ -266,14 +332,14 @@ function randomTokenString() {
 	return crypto.randomBytes(40).toString('hex');
 }
 
-function basicDetails(account) {
-	const { id, firstName, lastName, email, role, behaviourRating, overallContentRating, mathContentRating, scienceContentRating, socialStudiesContentRating, languageArtsContentRating, ForeignLanguageAcquisitionContentRating, created, updated, isVerified } = account;
-	return { id, firstName, lastName, email, role, behaviourRating, overallContentRating, mathContentRating, scienceContentRating, socialStudiesContentRating, languageArtsContentRating, ForeignLanguageAcquisitionContentRating, created, updated, isVerified };
+function accountDetails(account) {
+	const { id, firstName, lastName, email, role, approved, approvedSubjects, transcript, behaviourRating, contentRatings, createdAt, updatedAt, isVerified, verified } = account;
+	return { id, firstName, lastName, email, role, approved, approvedSubjects, transcript, behaviourRating, contentRatings, createdAt, updatedAt, isVerified, verified };
 }
 
 function publicDetails(account) {
-	const { id, firstName, lastName, role, behaviourRating, overallContentRating, mathContentRating, scienceContentRating, socialStudiesContentRating, languageArtsContentRating, ForeignLanguageAcquisitionContentRating } = account;
-	return { id, firstName, lastName, role, behaviourRating, overallContentRating, mathContentRating, scienceContentRating, socialStudiesContentRating, languageArtsContentRating, ForeignLanguageAcquisitionContentRating };
+	const { id, firstName, lastName, role, behaviourRating, contentRatings } = account;
+	return { id, firstName, lastName, role, behaviourRating, contentRatings };
 }
 
 async function sendVerificationEmail(account, origin) {

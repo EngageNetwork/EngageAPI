@@ -14,6 +14,12 @@ module.exports = {
 
 // Chat Model Functions
 async function initiateChat(userIds, chatInitiator) {
+	// Verify that specified users exist
+	for (const userId of userIds) {
+		const user = await db.Account.findById(userId);
+		if (!user) throw 'One of the specified users does not exist';
+	}
+
 	const availableChat = await db.Chat.findOne({
 		userIds: {
 			$size: userIds.length,
@@ -105,7 +111,6 @@ async function createPostInChat (chatId, message, postedByUser) {
 			}
 		}
 	]);
-	console.log(aggregate);
 	return aggregate[0];
 }
 

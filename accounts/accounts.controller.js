@@ -16,10 +16,12 @@ router.post('/forgot-password', forgotPasswordSchema, forgotPassword);
 router.post('/validate-reset-token', validateResetTokenSchema, validateResetToken);
 router.post('/reset-password', resetPasswordSchema, resetPassword);
 router.get('/', authorize(Role.Admin), getAll);
-router.get('/:id', authorize(), getById);
+router.get('/byId/:id', authorize(), getById);
 router.get('/public/:id', authorize(), getByIdPublic);
 router.post('/create', authorize(Role.Admin), createSchema, create);
-router.put('/:id', authorize(), updateSchema, update);
+router.put('/update/:id', authorize(), updateSchema, update);
+router.put('/update-transcript', authorize([Role.Admin, Role.Student]), updateTranscriptSchema, updateTranscript);
+router.put('/approve-tutor/:id', authorize(Role.Admin), approveTutorSchema, approveTutor);
 router.delete('/:id', authorize(), _delete);
 
 module.exports = router;
@@ -206,7 +208,7 @@ function updateSchema(req, res, next) {
 		confirmPassword: Joi.string().valid(Joi.ref('password')).empty('')
 	};
 	
-	// only admins can update role
+	// Only admins can update role
 	if (req.user.role === Role.Admin) {
 		schemaRules.role = Joi.string().valid(Role.Admin, Role.Tutor, Role.Student).empty('');
 	}
@@ -222,6 +224,36 @@ function update(req, res, next) {
 	}
 	
 	accountService.update(req.params.id, req.body)
+	.then(account => res.json(account))
+	.catch(next);
+}
+
+function updateTranscriptSchema(req, res, next) {
+	const schema = Joi.object({
+		math: Joi.string().empty(''),
+		science: Joi.string().empty(''),
+		socialStudies: Joi.string().empty(''),
+		languageArts: Joi.string().empty(''),
+		foreignLanguageAcquisition: Joi.string().empty('')
+	});
+	validateRequest(req, next, schema);
+}
+
+function updateTranscript(req, res, next) {
+	accountService.updateTranscript(req.user.id, req.body)
+	.then(account => res.json(account))
+	.catch(next);
+}
+
+function approveTutorSchema(req, res, next) {
+	const schema = Joi.object({
+		subject: Joi.string().required()
+	});
+	validateRequest(req, next, schema);
+}
+
+function approveTutor(req, res, next) {
+	accountService.approveTutor(req.params.id, req.body.subject)
 	.then(account => res.json(account))
 	.catch(next);
 }

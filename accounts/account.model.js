@@ -7,22 +7,40 @@ const schema = new Schema({
 	firstName: { type: String, required: true },
 	lastName: { type: String, required: true },
 	role: { type: String, required: true },
+	approved: Date,
+	approvedSubjects: {
+		math: Boolean,
+		science: Boolean,
+		socialStudies: Boolean,
+		languageArts: Boolean,
+		foreignLanguageAcquisition: Boolean
+	},
+	transcript: {
+		math: String,
+		science: String,
+		socialStudies: String,
+		languageArts: String,
+		foreignLanguageAcquisition: String
+	},
 	behaviourRating: Number,
-	overallContentRating: Number,
-	mathContentRating: Number,
-	scienceContentRating: Number,
-	socialStudiesContentRating: Number,
-	languageArtsContentRating: Number,
-	foreignLanguageAcquisitionContentRating: Number,
+	contentRatings: {
+		overallContentRating: Number,
+		mathContentRating: Number,
+		scienceContentRating: Number,
+		socialStudiesContentRating: Number,
+		languageArtsContentRating: Number,
+		foreignLanguageAcquisitionContentRating: Number
+	},
+	totalDuration: Number,
 	verificationToken: String,
 	verified: Date,
 	resetToken: {
 		token: String,
 		expires: Date
 	},
-	passwordReset: Date,
-	created: Date,
-	updated: Date
+	passwordReset: Date
+}, {
+	timestamps: true
 });
 
 schema.virtual('isVerified').get(function() {
