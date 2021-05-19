@@ -15,6 +15,7 @@ module.exports = {
 	getSlateByIdAdmin,
 	getAllListings,
 	getMyListings,
+	getMyFinishedListings,
 	getListingById,
 	getMySessions,
 	getSessionById,
@@ -180,6 +181,35 @@ async function getMyListings(account) {
 	const aggregate = await db.Slate.aggregate([
 		{ $match: { account: { $eq: account } } },
 		{ $match: { deleted: { $ne: true } } },
+		{ $match: { complete: { $ne: true } } },
+		// Run lookup on Accounts collection and retrieve user info for registered (student)
+		{
+			$lookup: {
+				from: 'accounts',
+				// Filter out unnecessary data fields
+				let: { registered: '$registered' },
+				pipeline: [
+					{ $match: { $expr: { $eq: ['$_id', '$$registered'] } } },
+					{ $project: { _id: 1, firstName: 1, lastName: 1, role: 1, behaviourRating: 1 } }
+				],
+				as: 'registeredDetails'
+			}
+		},
+		{ $unwind: {
+			'path': '$registeredDetails',
+			'preserveNullAndEmptyArrays': true
+		} }
+	]);
+	return aggregate;
+}
+
+async function getMyFinishedListings(account) {
+	var account = mongoose.Types.ObjectId(account);
+
+	const aggregate = await db.Slate.aggregate([
+		{ $match: { account: { $eq: account } } },
+		{ $match: { deleted: { $ne: true } } },
+		{ $match: { complete: { $eq: true } } },
 		// Run lookup on Accounts collection and retrieve user info for registered (student)
 		{
 			$lookup: {
@@ -339,6 +369,10 @@ async function markComplete(account, id) {
 
 	// If both have marked as complete
 	if (!!session.markedCompletedTutor && !!session.markedCompletedStudent) {
+		// Mark session as complete
+		session.complete = true;
+		await session.save(); // Since this is relatively critical, run save once immediately to ensure nothing interupts
+
 		// Update details of the latest room
 		const latestRoomDetails = await twilioClient.video.rooms(session.latestVideoConferenceRoom.sid).fetch();
 		const { sid, status, dateCreated, dateUpdated, duration, url, links } = latestRoomDetails;

@@ -16,6 +16,7 @@ router.get('/', authorize(Role.Admin), getAllAdmin);
 router.get('/slate/:id', authorize(Role.Admin), getSlateByIdAdmin);
 router.get('/listings', authorize([Role.Admin, Role.Student]), getAllListings);
 router.get('/mylistings', authorize([Role.Admin, Role.Tutor]), getMyListings);
+router.get('/myfinishedlistings', authorize([Role.Admin, Role.Tutor]), getMyFinishedListings);
 router.get('/listing/:id', authorize([Role.Admin, Role.Tutor]), getListingById);
 router.get('/mysessions', authorize([Role.Admin, Role.Student]), getMySessions);
 router.get('/session/:id', authorize([Role.Admin, Role.Student]), getSessionById);
@@ -100,6 +101,13 @@ function getMyListings(req, res, next) {
 	.catch(next);
 }
 
+function getMyFinishedListings(req, res, next) {
+	const account = req.user.id;
+	
+	slateService.getMyFinishedListings(account)
+	.then(listings => res.json(listings))
+	.catch(next);
+}
 function getListingById(req, res, next) {
 	
 	slateService.getListingById(req.params.id)

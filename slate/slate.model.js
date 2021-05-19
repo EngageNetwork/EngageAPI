@@ -30,6 +30,7 @@ const schema = new Schema({
 	tutorContentRatingByStudent: Number,
 	tutorBehaviourRatingByStudent: Number,
 	studentBehaviourRatingByTutor: Number,
+	complete: Boolean,
 	deleted: Boolean,
 	deleteDate: Date,
 	latestVideoConferenceRoom: videoConferenceRoomSchema,
