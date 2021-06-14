@@ -414,7 +414,11 @@ async function markComplete(account, id) {
 		}
 
 		// Save the duration of the call !!!!(May require update to include duration of historical calls)
-		session.sessionDuration = duration;
+		// const tutorDetails = await twilioClient.video.rooms(session.latestVideoConferenceRoom.sid).participants.get(session.account).fetch();
+		const tutorDetails = await twilioClient.video.rooms(session.latestVideoConferenceRoom.sid).participants.each({ status: 'disconnected'}, (participant) => {console.log(participant.identity)});
+		
+		console.log(tutorDetails);
+		// session.sessionDuration = duration;
 		await session.save();
 
 		// Recalculate tutor hours
