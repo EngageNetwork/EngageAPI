@@ -333,8 +333,8 @@ function randomTokenString() {
 }
 
 function accountDetails(account) {
-	const { id, firstName, lastName, email, role, approved, approvedSubjects, transcript, behaviourRating, contentRatings, createdAt, updatedAt, isVerified, verified } = account;
-	return { id, firstName, lastName, email, role, approved, approvedSubjects, transcript, behaviourRating, contentRatings, createdAt, updatedAt, isVerified, verified };
+	const { id, firstName, lastName, email, role, approved, approvedSubjects, transcript, behaviourRating, contentRatings, totalDuration, createdAt, updatedAt, isVerified, verified } = account;
+	return { id, firstName, lastName, email, role, approved, approvedSubjects, transcript, behaviourRating, contentRatings, totalDuration, createdAt, updatedAt, isVerified, verified };
 }
 
 function publicDetails(account) {
