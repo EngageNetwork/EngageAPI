@@ -1,6 +1,6 @@
 {
     "name": "engage-api",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "NodeJS + MongoDB API for Engage Web Application functions",
     "author": "Michael Wang",
     "license": "Proprietary",

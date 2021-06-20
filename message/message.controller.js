@@ -8,7 +8,7 @@ const messageService = require('./message.service');
 
 // Routes
 router.post('/initiate', authorize(), initiateChat);
-router.post('/:id/message', authorize(), postMsg);
+router.post('/:id/message', authorize(), postMsgSchema, postMsg);
 router.get('/', authorize(), getRecentChat);
 router.get('/:id', authorize(), getConversationByChatId);
 router.put('/:id/mark-read', authorize(), markReadByChatId)
@@ -27,10 +27,17 @@ function initiateChat(req, res, next) {
 	.catch(next);
 }
 
+function postMsgSchema(req, res, next) {
+	const schema = Joi.object({
+		msgPayload: Joi.string().required()
+	});
+	validateRequest(req, next, schema);
+}
+
 function postMsg(req, res, next) {
 	const account = req.user.id;
 	const chatId = req.params.id;
-	const msgPayload = { messageText: req.body.messageText };
+	const msgPayload = req.body.msgPayload;
 	messageService.createPostInChat(chatId, msgPayload, account)
 	.then(post => {
 		res.status(200).json(post);
