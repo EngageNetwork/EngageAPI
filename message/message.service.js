@@ -14,6 +14,12 @@ module.exports = {
 
 // Chat Model Functions
 async function initiateChat(userIds, chatInitiator) {
+	// Check if messaging self
+	userIds = userIds.filter(userId => userId !== chatInitiator);
+
+	// Verify userIds is not empty
+	if (!userIds.length) throw 'Other user cannot be empty/be yourself';
+
 	// Verify that specified users exist
 	for (const userId of userIds) {
 		const user = await db.Account.findById(userId);
@@ -139,6 +145,7 @@ async function getConversationByChatId (chatId, options = {}) {
 		// { $limit: options.limit },
 		// { $sort: { createdAt: 1 } },
 	]);
+	// console.log(aggregate);
 	return aggregate;
 }
 

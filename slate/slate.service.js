@@ -56,6 +56,9 @@ async function cancel(account, id) {
 
 	if (session.registered.toString() !== account) throw 'Unauthorized';
 
+	// Verify session hasn't already happened
+	if (!!session.latestVideoConferenceRoom?.sid) throw 'Unable to cancel: Previous video session detected'
+
 	session.registered = undefined;
 	session.registerDate = undefined;
 	await session.save();
@@ -360,6 +363,9 @@ async function update(account, id, params) {
 	// Users can update their listings and admins can update any listing
 	if (listing.account.toString() !== account.id && account.role !== Role.Admin) throw 'Unauthorized';
 	
+	// Ensure no one is registered
+	if (!!listing.registered) throw 'Unable to update: Student registered'
+
 	// Copy details to listing and save
 	Object.assign(listing, params);
 	await listing.save();
@@ -370,6 +376,9 @@ async function update(account, id, params) {
 async function markComplete(account, id) {
 	const session = await getSession(id);
 
+	// Verify that video session exists
+	if (!session.latestVideoConferenceRoom.sid) throw 'Unable to complete: No video session detected'
+	
 	// Verify submission came from session tutor or registered student
 	if (session.account.toString() !== account.id && session.registered.toString() !== account.id) throw 'Unauthorized';
 
@@ -519,9 +528,8 @@ async function sendTutorListingFilledEmail(origin, listing) {
 		subject: 'Engage Network - Listing Filled',
 		html: `
 		<p>Hello ${tutorAccount.firstName} ${tutorAccount.lastName},</p>
-		<p>You are receiving this email as a notification that ${studentAccount.firstName} ${studentAccount.lastName} has registered for your tutoring session from ${listing.startDateTime} to ${listing.endDateTime}. You can view the details <a href="${origin}/tutor/listings/details/${listing._id}">here</a>. Thank you for volunteering your time with us and helping us to achieve our vision of unrestricted education enrichment.</p>
+		<p>You are receiving this email as a notification that ${studentAccount.firstName} ${studentAccount.lastName} has registered for your tutoring session from ${listing.startDateTime} to ${listing.endDateTime}. You can view the details <a href="${origin}/tutor/listings/details/${listing._id}">here</a>. Thank you for volunteering your time with us.</p>
 		<p>Your student should contact you using the private message system at least 1 hour before your lesson. Use this information to structure your lesson as you see fit. If this is your first lesson, we recommend that you take a look at the tutor resource package before you begin.</p>
-		<p>Remember, we cannot make a community of learners and tutors without you. If you know anyone who might be interested in joining the Engage Network, we kindly ask that you spread the word about us so we can continue to deliver on our promise of free, unrestrictive extracurricular education.</p>
 		<p>Thank you and have a great lesson,</p>
 		<p>Engage Network Team</p>
 		<br>
@@ -539,9 +547,8 @@ async function sendStudentSessionRegistrationEmail(origin, session) {
 		subject: 'Engage Network - Session Registration Confirmation',
 		html: `
 		<p>Hello ${studentAccount.firstName} ${studentAccount.lastName},</p>
-		<p>Thank you for signing up for a session with the Engage Network, and we look forward to providing you with our promise of unrestricted education enrichment. You are receiving this email as a reminder that you recently registered for a tutoring session from ${session.startDateTime} to ${session.endDateTime} with ${tutorAccount.firstName} ${tutorAccount.lastName}. You can view the details <a href="${origin}/student/sessions/registered/details/${session._id}">here</a>.</p>
+		<p>Thank you for signing up for a session with the Engage Network. You are receiving this email as a reminder that you recently registered for a tutoring session from ${session.startDateTime} to ${session.endDateTime} with ${tutorAccount.firstName} ${tutorAccount.lastName}. You can view the details <a href="${origin}/student/sessions/registered/details/${session._id}">here</a>.</p>
 		<p>Please contact your tutor, if you have not done so already, using the private message system, and give a brief overview of what you want your tutor to cover for this particular session at least 1 hour before your lesson.</p>
-		<p>Remember, we cannot make a community of learners without you. If you know anyone who might be interested in joining the Engage Network, we kindly ask that you spread the word about us so we can continue to deliver on our promise of free, unrestrictive extracurricular education.</p>
 		<p>Thank you and enjoy your lesson,</p>
 		<p>Engage Network Team</p>
 		<br>

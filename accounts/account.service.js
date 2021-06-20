@@ -357,8 +357,13 @@ async function sendVerificationEmail(account, origin) {
 		to: account.email,
 		subject: 'Engage Network - Verify Email',
 		html: `<h4>Verify Email</h4>
-		<p>Thanks for registering!</p>
-		${message}`
+		<p>Hi ${account.firstName},</p>
+		<p>You’re receiving this email in order to verify your account on Engage Network.</p>
+		${message}
+		<p>Thank you,</p>
+		<p>Engage Network Team</p>
+		<br>
+		<p>[Automated] Please do not respond to this email as it is not monitored. Questions, comments, or concerns may be directed to support@engageapp.net.</p>`
 	});
 }
 

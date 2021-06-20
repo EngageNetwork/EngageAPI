@@ -38,7 +38,7 @@ module.exports = router;
 function createListingSchema(req, res, next) {
 	const schema = Joi.object({
 		subject: Joi.string().required(),
-		details: Joi.string(),
+		details: Joi.string().allow(null),
 		startDateTime: Joi.string().required(),
 		endDateTime: Joi.string().required()
 	});
@@ -142,7 +142,7 @@ function getSessionById(req, res, next) {
 function updateSchema(req, res, next) {
 	const schema = Joi.object({
 		subject: Joi.string().required(),
-		details: Joi.string(),
+		details: Joi.string().allow(null),
 		startDateTime: Joi.string().required(),
 		endDateTime: Joi.string().required()
 	});
