@@ -21,8 +21,7 @@ module.exports = router;
 function initiateChat(req, res, next) {
 	const chatInitiator = req.user.id;
 	const userIds = req.body.userIds;
-	const allUserIds = [...userIds, chatInitiator];
-	messageService.initiateChat(allUserIds, chatInitiator)
+	messageService.initiateChat(userIds, chatInitiator)
 	.then(chat => res.status(200).json(chat))
 	.catch(next);
 }

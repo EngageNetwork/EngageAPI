@@ -18,7 +18,10 @@ async function initiateChat(userIds, chatInitiator) {
 	userIds = userIds.filter(userId => userId !== chatInitiator);
 
 	// Verify userIds is not empty
-	if (!userIds.length) throw 'Other user cannot be empty/be yourself';
+	if (!userIds.length) throw 'Other user cannot be yourself';
+
+	// Add chatInitiator to userIds
+	userIds = [...userIds, chatInitiator];
 
 	// Verify that specified users exist
 	for (const userId of userIds) {
@@ -145,7 +148,6 @@ async function getConversationByChatId (chatId, options = {}) {
 		// { $limit: options.limit },
 		// { $sort: { createdAt: 1 } },
 	]);
-	// console.log(aggregate);
 	return aggregate;
 }
 
