@@ -1,7 +1,7 @@
 ﻿{
     "connectionString": "mongodb://localhost:27017/EngageAppDB",
     "secret": "incredibly-secret-secret-for-signing",
-    "emailFrom": "auth@mwang.tk",
+    "emailFrom": "updates@engageapp.net",
     "smtpOptions": {
         "host": "email-smtp.us-west-2.amazonaws.com",
         "port": 587,
