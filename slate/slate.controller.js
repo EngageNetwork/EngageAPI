@@ -29,7 +29,7 @@ router.delete('/delete/:id', authorize([Role.Admin, Role.Tutor]), _delete);
 
 // Video Conferencing API Routes
 router.post('/video/initiate/:id', authorize(), initiateVideoChat);
-router.get('/video/token/:id', authorize(), getVideoToken);
+router.post('/video/token', getVideoToken);
 
 module.exports = router;
 
@@ -226,10 +226,12 @@ function initiateVideoChat(req, res, next) {
 }
 
 function getVideoToken(req, res, next) {
-	const accountId = req.user.id;
-	const sessionId = req.params.id;
+	console.log('controller test');
 
-	videoConferenceService.getToken(accountId, sessionId)
+	const identity = req.body.user_identity;
+	const roomName = req.body.room_name;
+
+	videoConferenceService.getToken(identity, roomName)
 	.then(accessDetails => res.status(200).json(accessDetails))
 	.catch(next);
 }

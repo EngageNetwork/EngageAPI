@@ -72,15 +72,8 @@ async function closeVideoChat(sessionId) {
 	return session;
 }
 
-async function getToken(accountId, sessionId) {
-	// Verify session id and get session
-	if (!db.isValidId(sessionId)) throw 'Session not found';
-	const session = await db.Slate.findById(sessionId);
-	if (!session) throw 'Session not found';
-
-	// Get room details
-	const roomDetails = session.latestVideoConferenceRoom;
-
+async function getToken(identity, roomName) {
+	console.log('service test');
 	// Create access token
 	const token = new TwilioAccessToken(
 		process.env.TWILIO_ACCOUNT_SID,
@@ -90,15 +83,14 @@ async function getToken(accountId, sessionId) {
 	);
 
 	// Link token with user identity
-	token.identity = accountId;
+	token.identity = identity;
 
 	// Grant token access to Twilio video conference
-	const grant = new VideoGrant({ room: roomDetails.sid });
+	const grant = new VideoGrant({ room: roomName });
 	token.addGrant(grant);
 
 	// Serialize token to JWT and return
 	return {
-		sid: roomDetails.sid,
-		token: token.toJwt()
+		token: token.toJwt()	
 	}
 }
