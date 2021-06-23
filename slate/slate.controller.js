@@ -226,8 +226,6 @@ function initiateVideoChat(req, res, next) {
 }
 
 function getVideoToken(req, res, next) {
-	console.log('controller test');
-
 	const identity = req.body.user_identity;
 	const roomName = req.body.room_name;
 

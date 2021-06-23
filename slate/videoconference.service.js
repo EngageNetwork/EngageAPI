@@ -73,7 +73,6 @@ async function closeVideoChat(sessionId) {
 }
 
 async function getToken(identity, roomName) {
-	console.log('service test');
 	// Create access token
 	const token = new TwilioAccessToken(
 		process.env.TWILIO_ACCOUNT_SID,
