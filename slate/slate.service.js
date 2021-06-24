@@ -30,7 +30,6 @@ module.exports = {
 async function createListing(accountId, params) {
 	// Check if tutor is approved for subject
 	const account = await getAccount(accountId);
-	console.log(params.subject);
 	switch(params.subject) {
 		case 'Math':
 			if (account?.approvedSubjects?.math !== true) throw 'Not approved for subject: Math';
