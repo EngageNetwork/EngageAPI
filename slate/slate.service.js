@@ -27,7 +27,28 @@ module.exports = {
 	delete: _delete
 }
 
-async function createListing(params) {
+async function createListing(accountId, params) {
+	// Check if tutor is approved for subject
+	const account = await getAccount(accountId);
+	console.log(params.subject);
+	switch(params.subject) {
+		case 'Math':
+			if (account?.approvedSubjects?.math !== true) throw 'Not approved for subject: Math';
+			break;
+		case 'Science':
+			if (account?.approvedSubjects?.science !== true) throw 'Not approved for subject: Science';
+			break;
+		case 'Social Studies':
+			if (account?.approvedSubjects?.socialStudies !== true) throw 'Not approved for subject: Social Studies';
+			break;
+		case 'Language Arts':
+			if (account?.approvedSubjects?.languageArts !== true) throw 'Not approved for subject: Language Arts';
+			break;
+		case 'Foreign Language Acquisition':
+			if (account?.approvedSubjects?.foreignLanguageAcquisition !== true) throw 'Not approved for subject: Foreign Language Acquisition';
+			break;
+	}
+
 	// Create listing object
 	const listing = new db.Slate(params);
 	
@@ -500,6 +521,13 @@ async function _delete(account, id) {
 
 
 // Assistance Functions
+async function getAccount(id) {
+	if (!db.isValidId(id)) throw 'Account not found';
+	const account = await db.Account.findById(id);
+	if (!account) throw 'Account not found';
+	return account;
+}
+
 async function getListing(id) {
 	if (!db.isValidId(id)) throw 'Listing not found';
 	const listing = await db.Slate.findById(id);
