@@ -1,5 +1,6 @@
 const db = require('_helpers/db');
 const mongoose = require('mongoose');
+const { twilioClient } = require('_helpers/twilio');
 
 module.exports = {
 	recheckSessionComplete,
@@ -18,7 +19,25 @@ async function recheckSessionComplete(id) {
 			if (!!session.tutorContentRatingByStudent) {
 				// Mark session as complete
 				session.complete = true;
+
+				// Verify video call duration and update details of video room
+				const latestRoomDetails = await twilioClient.video.rooms(session.latestVideoConferenceRoom.sid).fetch();
+				const { sid, status, dateCreated, dateUpdated, duration, url, links } = latestRoomDetails;
+				session.latestVideoConferenceRoom = { sid, status, dateCreated, dateUpdated, duration, url, links }
+
+				// Close video conference room if not already closed
+				if (session.latestVideoConferenceRoom.status == 'in-progress') {
+					videoConferenceService.closeVideoChat(id);
+				}
+
+				// Save the duration of the call !!!!(May require update to include duration of historical calls)
+				session.sessionDuration = duration;
+
+				// Save session
 				await session.save();
+
+				// Recalculate Tutor Duration
+				this.recalculateTSeconds(session.account);
 			}
 		}
 	}

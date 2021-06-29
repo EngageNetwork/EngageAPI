@@ -52,7 +52,7 @@ function createListing(req, res, next) {
 	const startDateTime = new Date(req.body.startDateTime).toISOString();
 	const endDateTime = new Date(req.body.endDateTime).toISOString();
 	
-	slateService.createListing({ account, subject, details, startDateTime, endDateTime })
+	slateService.createListing(account, { account, subject, details, startDateTime, endDateTime })
 	.then(() => res.json({ message: 'Listing created successfully' }))
 	.catch(next);
 }
@@ -226,8 +226,6 @@ function initiateVideoChat(req, res, next) {
 }
 
 function getVideoToken(req, res, next) {
-	console.log('controller test');
-
 	const identity = req.body.user_identity;
 	const roomName = req.body.room_name;
 
