@@ -30,7 +30,7 @@
     "devDependencies": {
         "dotenv": "^8.2.0",
         "node-dev": "^6.7.0",
-        "nodemon": "^2.0.7",
+        "nodemon": "^2.0.12",
         "ts-node": "^9.1.1"
     }
 }

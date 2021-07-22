@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 
 module.exports = {
 	initiateChat,
+	getContacts,
 	getChatsByUserId,
 	getChatById,
 	createPostInChat,
@@ -46,6 +47,40 @@ async function initiateChat(userIds, chatInitiator) {
 	
 	const { id } = newChat;
 	return { id };
+}
+
+async function getContacts(account) {
+	account = mongoose.Types.ObjectId(account);
+
+	const aggregate = await db.Chat.aggregate([
+		// Find all existing chats
+		{ $match: { userIds: { $all: [account] } } },
+		{ $unwind: '$userIds' },
+		{ $match: { userIds: { $ne: account } } },
+		{
+			$lookup: {
+				from: 'accounts',
+				// Filter out unnecessary data fields
+				let: { contactId: '$userIds' },
+				pipeline: [
+					{ $match: { $expr: { $eq: ['$_id', '$$contactId'] } } },
+					{ $project: { _id: 1, firstName: 1, lastName: 1, role: 1 } }
+				],
+				as: 'contactProfile'
+			}
+		},
+		{ $unwind: '$contactProfile' },
+		// Get group data
+		{
+			$group: {
+				_id: '$_id',
+				contactId: { $last: '$userIds' },
+				contactProfile: { $last: '$contactProfile' }
+			}
+		}
+	])
+
+	return aggregate;
 }
 
 async function getChatsByUserId(id) {
@@ -116,7 +151,7 @@ async function createPostInChat (chatId, message, postedByUser) {
 				readByRecipients: { $last: '$readByRecipients' },
 				chatInfo: { $addToSet: '$chatInfo.userProfile' },
 				createdAt: { $last: '$createdAt' },
-				updatedAt: { $last: '$updatedAt' },
+				updatedAt: { $last: '$updatedAt' }
 			}
 		}
 	]);
