@@ -19,7 +19,7 @@ app.use(bodyParser.json());
 app.use(cookieParser());
 
 // Allow CORS requests from any origin in list with proper credentials
-const allowedOrigin = ['http://localhost:4200', 'http://localhost:3000', 'http://engageapp.net']
+const allowedOrigin = ['http://localhost:4200', 'http://localhost:3000', 'https://engageapp.net', 'https://video.engageapp.net']
 app.use(cors({ origin: allowedOrigin, credentials: true }));
 
 // API Routes

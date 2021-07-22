@@ -9,6 +9,7 @@ const messageService = require('./message.service');
 // Routes
 router.post('/initiate', authorize(), initiateChat);
 router.post('/:id/message', authorize(), postMsgSchema, postMsg);
+router.get('/contacts', authorize(), getContacts)
 router.get('/', authorize(), getRecentChat);
 router.get('/:id', authorize(), getConversationByChatId);
 router.put('/:id/mark-read', authorize(), markReadByChatId)
@@ -42,6 +43,14 @@ function postMsg(req, res, next) {
 		res.status(200).json(post);
 		global.io.sockets.in(chatId).emit('new message', { message: post });
 	})
+	.catch(next);
+}
+
+function getContacts(req, res, next) {
+	const account = req.user.id;
+	
+	messageService.getContacts(account)
+	.then(contacts => res.json(contacts))
 	.catch(next);
 }
 
